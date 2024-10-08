@@ -23,7 +23,6 @@ select = [
     "C",  # flake8-comprehensions
     "SIM",  # flake8-simplify
     "I",  # isort
-    "FAST",  # fastapi
 ]
 
 [tool.ruff.format]
