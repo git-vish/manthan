@@ -7,3 +7,24 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.115.0",
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "pre-commit>=4.0.0",
+    "ruff>=0.6.9",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle
+    "F",  # Pyflakes
+    "UP",  # pyupgrade
+    "B",  # flake8-bugbear
+    "C",  # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "I",  # isort
+    "FAST",  # fastapi
+]
+
+[tool.ruff.format]
+docstring-code-format = true
