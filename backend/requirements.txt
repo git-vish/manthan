@@ -16,6 +16,8 @@ anyio==4.6.0
     #   httpx
     #   starlette
     #   watchfiles
+asgi-correlation-id==4.3.3
+    # via manthanai (pyproject.toml)
 attrs==24.2.0
     # via aiohttp
 beautifulsoup4==4.12.3
@@ -235,7 +237,9 @@ requests==2.32.3
 requests-toolbelt==1.0.0
     # via langsmith
 rich==13.9.2
-    # via typer
+    # via
+    #   manthanai (pyproject.toml)
+    #   typer
 rsa==4.9
     # via google-auth
 shellingham==1.5.4
@@ -252,7 +256,9 @@ sqlalchemy==2.0.35
     #   langchain
     #   langchain-community
 starlette==0.38.6
-    # via fastapi
+    # via
+    #   asgi-correlation-id
+    #   fastapi
 tavily-python==0.5.0
     # via manthanai (pyproject.toml)
 tenacity==8.5.0
