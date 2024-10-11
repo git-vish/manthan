@@ -5,8 +5,7 @@ from src.graph.states import AnyGraphState
 
 
 class BaseNode(ABC):
-    """
-    Abstract base class for graph nodes, defining the interface for
+    """Abstract base class for graph nodes, defining the interface for
     asynchronous execution.
 
     Each derived node class must implement the asynchronous `arun` method.
@@ -14,8 +13,7 @@ class BaseNode(ABC):
 
     @abstractmethod
     async def arun(self, state: AnyGraphState) -> dict[str, Any]:
-        """
-        Asynchronous node execution method.
+        """Asynchronous node execution method.
 
         Args:
             state: The current state of the graph.
@@ -26,13 +24,5 @@ class BaseNode(ABC):
         pass
 
     async def __call__(self, state: AnyGraphState) -> dict[str, Any]:
-        """
-        Make the instance callable, invoking the `arun` method.
-
-        Args:
-            state: The current state of the graph.
-
-        Returns:
-            A dictionary with the updated state after this node's execution.
-        """
+        """Makes the instance callable, invoking the `arun` method."""
         return await self.arun(state)

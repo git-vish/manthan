@@ -1,19 +1,35 @@
 from pydantic import BaseModel, Field
 
+from src.config import settings
+
+
+class HealthCheckResponse(BaseModel):
+    """Health check response schema."""
+
+    status: str = Field(..., description="Service health status.")
+
 
 class ResearchRequest(BaseModel):
-    """Request model for the research API."""
+    """Research request schema."""
 
     topic: str = Field(
-        description="The topic for the research.",
+        ...,
+        description="Research topic.",
         examples=["Langchain vs LlamaIndex"],
+    )
+    n_queries: int = Field(
+        default=settings.QUERY_COUNT,
+        ge=2,
+        le=5,
+        description="Number of search queries to generate.",
     )
 
 
-class ResearchResponse(ResearchRequest):
-    """Response model for the research API."""
+class ResearchResponse(BaseModel):
+    """Research response schema."""
 
+    topic: str = Field(..., description="Research topic.")
     report: str = Field(
-        description="The report containing the research results in markdown.",
-        examples=["# This is the report for your research query."],
+        ...,
+        description="Generated research report in markdown format.",
     )

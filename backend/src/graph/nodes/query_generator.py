@@ -27,8 +27,7 @@ class QueryGeneratorNode(BaseNode):
     """Node responsible for generating search queries based on a research topic."""
 
     def __init__(self, llm: BaseChatModel):
-        """
-        Initializes the query generator node.
+        """Initializes the query generator node.
 
         Args:
             llm: The language model to use for query generation

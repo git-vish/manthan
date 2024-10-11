@@ -6,9 +6,7 @@ from src.graph.states import ResearchGraphState
 
 
 class WebSearchNode(BaseNode):
-    """
-    Node responsible for performing a web search using TAVILY.
-    """
+    """Node responsible for performing a web search using TAVILY."""
 
     def __init__(self):
         self._search = TavilySearchResults(
