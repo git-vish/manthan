@@ -1,0 +1,5 @@
+NODE_GENERATE_QUERIES: str = "generate_queries"
+NODE_CONDUCT_RESEARCH: str = "conduct_research"
+NODE_SEARCH_WEB: str = "search_web"
+NODE_GENERATE_RESEARCH_SUMMARY: str = "generate_research_summary"
+NODE_WRITE_REPORT: str = "write_report"
