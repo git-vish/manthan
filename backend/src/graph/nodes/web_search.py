@@ -10,7 +10,8 @@ class WebSearchNode(BaseNode):
 
     def __init__(self):
         self._search = TavilySearchResults(
-            exclude_domains=settings.TAVILY_EXCLUDE_DOMAINS
+            search_depth=settings.TAVILY_SEARCH_DEPTH,
+            exclude_domains=settings.TAVILY_EXCLUDE_DOMAINS,
         )
 
     async def arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
