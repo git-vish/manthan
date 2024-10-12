@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Provider as ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
@@ -21,10 +21,12 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "ManthanAI - Research Assistant",
   description: "Ask questions, analyze data, and explore topics with ManthanAI",
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
+    { media: "prefers-color-scheme: dark", color: "black" },
+    { media: "prefers-color-scheme: light", color: "white" },
   ],
 };
 
