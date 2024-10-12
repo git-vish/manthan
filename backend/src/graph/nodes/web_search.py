@@ -14,7 +14,7 @@ class WebSearchNode(BaseNode):
             exclude_domains=settings.TAVILY_EXCLUDE_DOMAINS,
         )
 
-    async def arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
+    async def _arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
         query = state["query"]
         search_results = await self._search.ainvoke(input=query)
 

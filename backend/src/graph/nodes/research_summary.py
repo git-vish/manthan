@@ -61,7 +61,7 @@ class ResearchSummaryNode(BaseNode):
         )
         self._chain = prompt | llm
 
-    async def arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
+    async def _arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
         query = state["query"]
         search_docs = "\n-----\n".join(state["search_docs"])
 

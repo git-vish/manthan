@@ -76,7 +76,7 @@ class ReportWriterNode(BaseNode):
         )
         self._chain = prompt | llm
 
-    async def arun(self, state: GraphState) -> dict[str, str]:
+    async def _arun(self, state: GraphState) -> dict[str, str]:
         topic = state["topic"]
         research_summaries = state["research_summaries"]
 

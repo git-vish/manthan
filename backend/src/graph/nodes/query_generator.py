@@ -40,7 +40,7 @@ class QueryGeneratorNode(BaseNode):
         )
         self._chain = prompt | llm.with_structured_output(SearchQueries)
 
-    async def arun(self, state: GraphState) -> dict[str, list[str]]:
+    async def _arun(self, state: GraphState) -> dict[str, list[str]]:
         topic = state["topic"]
         n_queries = state["n_queries"]
 
