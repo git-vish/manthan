@@ -1,3 +1,3 @@
-from .graph import graph as research_graph
+from .graph import ResearchGraph
 
-__all__ = ["research_graph"]
+__all__ = ["ResearchGraph"]

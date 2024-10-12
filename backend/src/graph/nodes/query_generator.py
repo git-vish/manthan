@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
 from src.graph.nodes.base import BaseNode
-from src.graph.states import GraphState
+from src.graph.states import ResearchGraphState
 
 
 class SearchQueries(BaseModel):
@@ -40,7 +40,7 @@ class QueryGeneratorNode(BaseNode):
         )
         self._chain = prompt | llm.with_structured_output(SearchQueries)
 
-    async def _arun(self, state: GraphState) -> dict[str, list[str]]:
+    async def _arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
         topic = state["topic"]
         n_queries = state["n_queries"]
 

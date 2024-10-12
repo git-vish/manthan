@@ -2,7 +2,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 
 from src.graph.nodes.base import BaseNode
-from src.graph.states import GraphState
+from src.graph.states import ResearchGraphState
 
 _SYSTEM_MESSAGE = """You are an expert writer synthesizing comprehensive research reports.
 
@@ -76,7 +76,7 @@ class ReportWriterNode(BaseNode):
         )
         self._chain = prompt | llm
 
-    async def _arun(self, state: GraphState) -> dict[str, str]:
+    async def _arun(self, state: ResearchGraphState) -> dict[str, str]:
         topic = state["topic"]
         research_summaries = state["research_summaries"]
 
