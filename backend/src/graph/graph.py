@@ -19,12 +19,12 @@ from src.graph.nodes import (
     ResearchSummaryNode,
     WebSearchNode,
 )
-from src.graph.states import GraphState, ResearchGraphState
+from src.graph.states import ResearchGraphState, ResearchSubGraphState
 
 
-class Graph:
+class ResearchGraph:
     """
-    The main graph for generating queries, conducting research, and writing reports.
+    The graph for generating queries, conducting research, and writing reports.
     """
 
     def __init__(self):
@@ -49,14 +49,14 @@ class Graph:
 
         self._graph = self._build_graph()
 
-    def _build_research_graph(self) -> CompiledStateGraph:
+    def _build_research_subgraph(self) -> CompiledStateGraph:
         """Builds up the research subgraph for conducting web searches and
         generating research summaries based on search queries.
 
         Returns:
             CompiledStateGraph: The research subgraph.
         """
-        builder = StateGraph(ResearchGraphState)
+        builder = StateGraph(ResearchSubGraphState)
 
         builder.add_node(NODE_SEARCH_WEB, WebSearchNode())
         builder.add_node(
@@ -70,11 +70,11 @@ class Graph:
         return builder.compile()
 
     @staticmethod
-    def _initiate_research(state: GraphState) -> list[Send]:
+    def _initiate_research(state: ResearchGraphState) -> list[Send]:
         """Initiates the research process by sending research tasks for each query.
 
         Args:
-            state (GraphState): The current state of the graph containing the queries.
+            state (ResearchGraphState): The current state of the graph.
 
         Returns:
             list[Send]: A list of Send objects for conducting research tasks.
@@ -89,10 +89,10 @@ class Graph:
         Returns:
             CompiledStateGraph: The main graph.
         """
-        builder = StateGraph(GraphState)
+        builder = StateGraph(ResearchGraphState)
 
         builder.add_node(NODE_GENERATE_QUERIES, QueryGeneratorNode(llm=self._groq))
-        builder.add_node(NODE_CONDUCT_RESEARCH, self._build_research_graph())
+        builder.add_node(NODE_CONDUCT_RESEARCH, self._build_research_subgraph())
         builder.add_node(NODE_WRITE_REPORT, ReportWriterNode(llm=self._groq_stream))
 
         builder.add_edge(START, NODE_GENERATE_QUERIES)
@@ -104,8 +104,8 @@ class Graph:
 
         return builder.compile()
 
-    async def invoke(self, topic: str, n_queries: int) -> str:
-        """Conducts research based on the given topic and return a report.
+    async def ainvoke(self, topic: str, n_queries: int) -> str:
+        """Asynchronously conducts research on the given topic and returns a report.
 
         Args:
             topic (str): The topic to conduct research on.
@@ -120,8 +120,8 @@ class Graph:
 
         return results["report"]
 
-    async def stream(self, topic: str, n_queries: int) -> AsyncGenerator[dict, None]:
-        """Streams graph events and research report as generated.
+    async def astream(self, topic: str, n_queries: int) -> AsyncGenerator[dict, None]:
+        """Asynchronously streams research progress and the final report.
 
         Args:
             topic (str): The topic to conduct research on.
@@ -159,6 +159,3 @@ class Graph:
                         yield {"event": "stream", "data": data}
 
         yield {"event": "progress", "data": {"content": "END"}}
-
-
-graph = Graph()

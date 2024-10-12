@@ -1,3 +1,5 @@
+from typing import Literal
+
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
@@ -23,6 +25,7 @@ class AppSettings(BaseSettings):
     GOOGLE_FLASH_TEMPERATURE: float = 0.2
 
     TAVILY_API_KEY: str
+    TAVILY_SEARCH_DEPTH: Literal["basic", "advanced"] = "basic"
     TAVILY_EXCLUDE_DOMAINS: list[str] = ["youtube.com"]
 
 

@@ -8,11 +8,11 @@ class BaseNode(ABC):
     """Abstract base class for graph nodes, defining the interface for
     asynchronous execution.
 
-    Each derived node class must implement the asynchronous `arun` method.
+    Each derived node class must implement the asynchronous `_arun` method.
     """
 
     @abstractmethod
-    async def arun(self, state: AnyGraphState) -> dict[str, Any]:
+    async def _arun(self, state: AnyGraphState) -> dict[str, Any]:
         """Asynchronous node execution method.
 
         Args:
@@ -24,5 +24,5 @@ class BaseNode(ABC):
         pass
 
     async def __call__(self, state: AnyGraphState) -> dict[str, Any]:
-        """Makes the instance callable, invoking the `arun` method."""
-        return await self.arun(state)
+        """Makes the instance callable, invoking the `_arun` method."""
+        return await self._arun(state)

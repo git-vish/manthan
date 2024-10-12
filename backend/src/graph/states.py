@@ -2,8 +2,8 @@ import operator
 from typing import Annotated, TypedDict
 
 
-class GraphState(TypedDict):
-    """Represents the state for the main graph."""
+class ResearchGraphState(TypedDict):
+    """Represents the state for the research graph."""
 
     topic: str
     n_queries: int
@@ -12,7 +12,7 @@ class GraphState(TypedDict):
     report: str
 
 
-class ResearchGraphState(TypedDict):
+class ResearchSubGraphState(TypedDict):
     """Represents the state for the research subgraph."""
 
     query: str
@@ -21,4 +21,4 @@ class ResearchGraphState(TypedDict):
 
 
 # Type alias for convenience
-AnyGraphState = GraphState | ResearchGraphState
+AnyGraphState = ResearchGraphState | ResearchSubGraphState

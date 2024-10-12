@@ -2,7 +2,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 
 from src.graph.nodes.base import BaseNode
-from src.graph.states import ResearchGraphState
+from src.graph.states import ResearchSubGraphState
 
 _SYSTEM_MESSAGE = """You are an expert research analyst specializing in synthesizing information from search results into clear, structured reports. 
 Your role is to analyze search documents thoroughly and create concise, informative reports that capture key insights.
@@ -61,7 +61,7 @@ class ResearchSummaryNode(BaseNode):
         )
         self._chain = prompt | llm
 
-    async def arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
+    async def _arun(self, state: ResearchSubGraphState) -> dict[str, list[str]]:
         query = state["query"]
         search_docs = "\n-----\n".join(state["search_docs"])
 
