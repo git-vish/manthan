@@ -1,4 +1,4 @@
-export default function IntroSection() {
+export default function ChatBanner() {
   return (
     <section id="intro" className="mb-8 text-center">
       <h1 className="text-3xl sm:text-4xl font-bold mb-2">

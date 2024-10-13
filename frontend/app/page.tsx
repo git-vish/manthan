@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Alert from "@/components/alert";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import IntroSection from "@/components/intro-section";
+import ChatBanner from "@/components/chat-banner";
 import ChatSection from "@/components/chat-section";
 
 /**
@@ -87,8 +87,8 @@ export default function Home() {
         {/* Main Content - Hidden While Initializing */}
         {!isInitializing && !initError && (
           <>
-            {/* Introduction section */}
-            <IntroSection />
+            {/* Chat banner section */}
+            <ChatBanner />
 
             {/* Chat section */}
             <ChatSection />
