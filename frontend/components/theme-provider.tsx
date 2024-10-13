@@ -3,7 +3,17 @@
 import { ThemeProvider } from "next-themes";
 import { ReactNode } from "react";
 
-export function Provider({ children }: { children: ReactNode }) {
+interface ProviderProps {
+  children: ReactNode;
+}
+
+/**
+ * Provider component wraps children in a ThemeProvider for theme management.
+ *
+ * @param {ProviderProps} props - The component props
+ * @return {JSX.Element} The rendered Provider component
+ */
+export function Provider({ children }: ProviderProps): JSX.Element {
   return (
     <ThemeProvider
       attribute="class"

@@ -16,6 +16,7 @@ interface AlertProps {
   variant?: Variant;
 }
 
+// Mapping of alert variants to their corresponding icons
 const IconMap: Record<Variant, ForwardRefExoticComponent<LucideProps>> = {
   info: BadgeInfoIcon,
   loader: LoaderCircleIcon,
@@ -23,18 +24,26 @@ const IconMap: Record<Variant, ForwardRefExoticComponent<LucideProps>> = {
   error: TriangleAlertIcon,
 };
 
+/**
+ * Alert component for displaying notifications to the user.
+ *
+ * @param {AlertProps} props - The properties for the Alert component
+ * @return {JSX.Element} The rendered Alert component
+ */
 export default function Alert({
   title,
   description = " ",
   variant = "info",
-}: AlertProps) {
-  const Icon = IconMap[variant as Variant];
+}: AlertProps): JSX.Element {
+  const Icon = IconMap[variant]; // Get the icon based on the variant
+
   return (
     <div className="w-full max-w-2xl mb-8">
       <BaseAlert
         variant={variant === "error" ? "destructive" : "default"}
         className="flex items-center space-x-2 space-y-2"
       >
+        {/* Render the icon if it's not a progress variant */}
         {variant !== "progress" && (
           <div className={`${variant !== "error" ? "text-blue-500" : ""}`}>
             <Icon

@@ -20,10 +20,16 @@ interface ReportMarkdownProps {
   showActions?: boolean;
 }
 
+/**
+ * ReportMarkdown component displays markdown content with optional action buttons.
+ *
+ * @param {ReportMarkdownProps} props - The component props
+ * @return {JSX.Element} The rendered ReportMarkdown component
+ */
 export default function ReportMarkdown({
   content,
   showActions = false,
-}: ReportMarkdownProps) {
+}: ReportMarkdownProps): JSX.Element {
   const actions = [
     { label: "Copy", icon: CopyIcon },
     { label: "Download PDF", icon: FileDownIcon },
@@ -53,7 +59,7 @@ export default function ReportMarkdown({
                     size="icon"
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    <action.icon className="w-4 h-4" />
+                    <action.icon className="w-5 h-5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>

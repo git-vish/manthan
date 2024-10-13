@@ -2,23 +2,24 @@
 
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { BorderBeam } from "./ui/border-beam";
 import { Send } from "lucide-react";
 import ReportMarkdown from "./report-markdown";
 import ProgressUpdates from "./progress-updates";
 import { createParser, ParseEvent } from "eventsource-parser";
 import Alert from "./alert";
+import { siteConfig } from "@/config/site";
 // import TopicSuggestions from "./topic-suggestions";
 
-export default function ChatSection() {
+export default function ChatSection(): JSX.Element {
   // State to manage the research topic input
   const [topicInput, setTopicInput] = useState<string>("");
 
   // State to manage processing status
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  // State to mange progress message
+  // State to manage progress message
   const [progressMessage, setProgressMessage] = useState<string>("");
 
   // State to manage research report
@@ -30,31 +31,33 @@ export default function ChatSection() {
   // Ref to abort controller
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Effect for auto-scrolling the page
+  useEffect(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [report, progressMessage, error]);
+
   /**
    * Handles the submission of research topic.
-   * Logs the topic to console and clears the field.
+   * Clears input, sets processing state, and initiates research.
    */
   const handleSubmit = async (): Promise<void> => {
     const topic = topicInput.trim();
-    if (!topic) return;
+    if (!topic) return; // Early return if the input is empty
 
-    // Clear the input field
+    // Reset state for new submission
     setTopicInput("");
-
-    // Set the processing state
     setIsProcessing(true);
-
-    // Flush the research report in case it exists
     setReport("");
-
-    // Flush the error in case it exists
     setError("");
 
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
     try {
-      // Initiate research
+      // Initiate research by fetching from the API
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/stream`,
         {
@@ -72,13 +75,11 @@ export default function ChatSection() {
       }
 
       const SSEParser = createParser((event: ParseEvent) => {
-        if (event) {
-          if (event.type === "event") {
-            handleSSEEvent(
-              event.event as "progress" | "stream" | "end",
-              event.data
-            );
-          }
+        if (event && event.type === "event") {
+          handleSSEEvent(
+            event.event as "progress" | "stream" | "end",
+            event.data
+          );
         }
       });
 
@@ -89,30 +90,38 @@ export default function ChatSection() {
 
       const decoder = new TextDecoder();
 
+      // Read the response stream
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
-        SSEParser.feed(chunk);
+        SSEParser.feed(chunk); // Feed the chunk to the SSE parser
       }
     } catch (err) {
+      // Handle fetch errors
       if ((err as Error).name === "AbortError") {
-        setError("Connection timed out. Please try again in a bit.");
+        setError(siteConfig.alerts.abortError);
       } else {
-        setError("Error. Please try again in a bit.");
+        setError(siteConfig.alerts.streamError);
       }
     } finally {
       setIsProcessing(false);
-      abortControllerRef.current = null;
+      abortControllerRef.current = null; // Clear the abort controller reference
     }
   };
 
+  /**
+   * Handles Server-Sent Events (SSE) based on the event type.
+   *
+   * @param {("progress" | "stream" | "end")} event - The type of SSE event
+   * @param {string} data - The data associated with the SSE event
+   */
   const handleSSEEvent = (
     event: "progress" | "stream" | "end",
     data: string
-  ) => {
-    const json_data = JSON.parse(data);
-    const content = json_data.content;
+  ): void => {
+    const jsonData = JSON.parse(data);
+    const content = jsonData.content;
 
     switch (event) {
       case "progress":
@@ -123,6 +132,7 @@ export default function ChatSection() {
         setReport((prevReport) => prevReport + content);
         break;
       case "end":
+        // Handle the end of the stream if necessary
         break;
     }
   };
@@ -133,26 +143,29 @@ export default function ChatSection() {
    *
    * @param {React.KeyboardEvent<HTMLTextAreaElement>} e - The keyboard event
    */
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyPress = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>
+  ): void => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
+      e.preventDefault(); // Prevent default behavior of Enter key
+      handleSubmit(); // Submit the topic
     }
   };
 
   return (
-    <div className="w-full max-w-2xl px-2 mb-8">
+    <div className="w-full max-w-2xl px-2 mb-4">
       {/* Input section */}
       <section id="input" className="mb-8">
         <div className="relative rounded-md">
           {!isProcessing && <BorderBeam size={120} borderWidth={2} />}
           <Textarea
-            placeholder="Ask ManthanAI a question..."
+            placeholder={siteConfig.topicPlaceholder}
             value={topicInput}
             onChange={(e) => setTopicInput(e.target.value)}
             onKeyDown={handleKeyPress}
             className="text-md pr-12 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-accent min-h-24"
             aria-label="Research question input"
+            disabled={isProcessing}
           />
           <Button
             size="icon"

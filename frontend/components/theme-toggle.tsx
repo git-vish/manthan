@@ -4,10 +4,18 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
 
+/**
+ * ThemeToggle component allows users to switch between light and dark themes.
+ *
+ * @return {JSX.Element} The rendered ThemeToggle component
+ */
 export function ThemeToggle(): JSX.Element {
   const { theme, setTheme } = useTheme();
 
-  const toggleTheme = () => {
+  /**
+   * Toggles the current theme between light and dark.
+   */
+  const toggleTheme = (): void => {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
