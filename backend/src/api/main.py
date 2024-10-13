@@ -10,7 +10,7 @@ from starlette.responses import StreamingResponse
 
 from src.api.schemas import HealthCheckResponse, ResearchRequest, ResearchResponse
 from src.config import configure_logging, settings
-from src.graph import research_graph
+from src.graph import ResearchGraph
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # set up
     configure_logging()
+    app.state.research_graph = ResearchGraph()
     yield
     # clean up
 
@@ -49,7 +50,8 @@ async def health():
 @app.post("/invoke", response_model=ResearchResponse)
 async def invoke(request: ResearchRequest):
     """Endpoint to conduct research based on the given topic and return the report."""
-    report = await research_graph.invoke(
+    research_graph: ResearchGraph = app.state.research_graph
+    report = await research_graph.ainvoke(
         topic=request.topic, n_queries=request.n_queries
     )
     return ResearchResponse(topic=request.topic, report=report)
@@ -64,7 +66,8 @@ async def _handle_stream(request: ResearchRequest) -> AsyncGenerator[str, None]:
     Yields:
         str: Server-Sent Events formatted string.
     """
-    async for event in research_graph.stream(
+    research_graph: ResearchGraph = app.state.research_graph
+    async for event in research_graph.astream(
         topic=request.topic, n_queries=request.n_queries
     ):
         yield f"event: {event["event"]}\ndata: {json.dumps(event["data"])}\n\n"

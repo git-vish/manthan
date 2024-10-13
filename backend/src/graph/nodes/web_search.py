@@ -2,7 +2,7 @@ from langchain_community.tools import TavilySearchResults
 
 from src.config import settings
 from src.graph.nodes.base import BaseNode
-from src.graph.states import ResearchGraphState
+from src.graph.states import ResearchSubGraphState
 
 
 class WebSearchNode(BaseNode):
@@ -10,10 +10,11 @@ class WebSearchNode(BaseNode):
 
     def __init__(self):
         self._search = TavilySearchResults(
-            exclude_domains=settings.TAVILY_EXCLUDE_DOMAINS
+            search_depth=settings.TAVILY_SEARCH_DEPTH,
+            exclude_domains=settings.TAVILY_EXCLUDE_DOMAINS,
         )
 
-    async def arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
+    async def _arun(self, state: ResearchSubGraphState) -> dict[str, list[str]]:
         query = state["query"]
         search_results = await self._search.ainvoke(input=query)
 
