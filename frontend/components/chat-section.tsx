@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { useState } from "react";
 import { BorderBeam } from "./ui/border-beam";
-import TopicSuggestions from "./topic-suggestions";
+// import TopicSuggestions from "./topic-suggestions";
 import { Send } from "lucide-react";
 import ReportMarkdown from "./report-markdown";
 import ProgressUpdates from "./progress-updates";
