@@ -36,7 +36,7 @@ export default function Alert({
         className="flex items-center space-x-2 space-y-2"
       >
         {variant !== "progress" && (
-          <div className="text-blue-500">
+          <div className={`${variant !== "error" ? "text-blue-500" : ""}`}>
             <Icon
               className={`${
                 variant === "loader" ? "animate-spin" : ""
