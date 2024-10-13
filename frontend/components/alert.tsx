@@ -1,25 +1,25 @@
 import {
   BadgeInfoIcon,
   LoaderCircleIcon,
-  BrainIcon,
   TriangleAlertIcon,
   LucideProps,
 } from "lucide-react";
 import { AlertDescription, AlertTitle, Alert as BaseAlert } from "./ui/alert";
 import { ForwardRefExoticComponent } from "react";
+import AnimatedShinyText from "./ui/animated-shiny-text";
 
 type Variant = "info" | "loader" | "progress" | "error";
 
 interface AlertProps {
   title: string;
-  description: string;
+  description?: string;
   variant?: Variant;
 }
 
 const IconMap: Record<Variant, ForwardRefExoticComponent<LucideProps>> = {
   info: BadgeInfoIcon,
   loader: LoaderCircleIcon,
-  progress: BrainIcon,
+  progress: LoaderCircleIcon,
   error: TriangleAlertIcon,
 };
 
@@ -35,14 +35,24 @@ export default function Alert({
         variant={variant === "error" ? "destructive" : "default"}
         className="flex items-center space-x-2 space-y-2"
       >
-        <Icon
-          className={`${
-            variant === "loader" || variant === "progress" ? "animate-spin" : ""
-          } h-5 w-5`}
-        />
+        {variant !== "progress" && (
+          <div className="text-blue-500">
+            <Icon
+              className={`${
+                variant === "loader" ? "animate-spin" : ""
+              } h-5 w-5`}
+            />
+          </div>
+        )}
         <div>
-          <AlertTitle>{title}</AlertTitle>
-          <AlertDescription>{description}</AlertDescription>
+          <AlertTitle>
+            {variant === "progress" ? (
+              <AnimatedShinyText>{title}</AnimatedShinyText>
+            ) : (
+              <span>{title}</span>
+            )}
+          </AlertTitle>
+          {description && <AlertDescription>{description}</AlertDescription>}
         </div>
       </BaseAlert>
     </div>
