@@ -25,7 +25,7 @@ const IconMap: Record<Variant, ForwardRefExoticComponent<LucideProps>> = {
 
 export default function Alert({
   title,
-  description,
+  description = " ",
   variant = "info",
 }: AlertProps) {
   const Icon = IconMap[variant as Variant];

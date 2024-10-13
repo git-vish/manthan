@@ -25,15 +25,15 @@ export default function Home() {
    * Sets the initialization state based on the response.
    */
   const checkHealth = async () => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2 * 60 * 1000); // 2 minutes timeout
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 2 * 60 * 1000); // 2 minutes timeout
 
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/health`,
         {
           method: "GET",
-          signal: controller.signal,
+          signal: abortController.signal,
         }
       );
       clearTimeout(timeoutId);

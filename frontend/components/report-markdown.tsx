@@ -17,9 +17,13 @@ import {
 
 interface ReportMarkdownProps {
   content: string;
+  showActions?: boolean;
 }
 
-export default function ReportMarkdown({ content }: ReportMarkdownProps) {
+export default function ReportMarkdown({
+  content,
+  showActions = false,
+}: ReportMarkdownProps) {
   const actions = [
     { label: "Copy", icon: CopyIcon },
     { label: "Download PDF", icon: FileDownIcon },
@@ -38,26 +42,28 @@ export default function ReportMarkdown({ content }: ReportMarkdownProps) {
       </Markdown>
 
       {/* Actions Section */}
-      <TooltipProvider>
-        <div className="mt-4 flex space-x-1">
-          {actions.map((action, index) => (
-            <Tooltip key={index}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <action.icon className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{action.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
-        </div>
-      </TooltipProvider>
+      {showActions && (
+        <TooltipProvider>
+          <div className="mt-6 flex space-x-1">
+            {actions.map((action, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <action.icon className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{action.label}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </TooltipProvider>
+      )}
     </section>
   );
 }
