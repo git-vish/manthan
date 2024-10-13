@@ -2,12 +2,14 @@ import json
 import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 from asgi_correlation_id import CorrelationIdMiddleware
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import StreamingResponse
 
+from src.api.auth import get_api_key
 from src.api.schemas import HealthCheckResponse, ResearchRequest, ResearchResponse
 from src.config import configure_logging, settings
 from src.graph import ResearchGraph
@@ -33,9 +35,9 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 app.add_middleware(CorrelationIdMiddleware)
@@ -48,7 +50,9 @@ async def health():
 
 
 @app.post("/invoke", response_model=ResearchResponse)
-async def invoke(request: ResearchRequest):
+async def invoke(
+    request: ResearchRequest, api_key: Annotated[str, Depends(get_api_key)]
+):
     """Endpoint to conduct research based on the given topic and return the report."""
     research_graph: ResearchGraph = app.state.research_graph
     report = await research_graph.ainvoke(
@@ -74,6 +78,8 @@ async def _handle_stream(request: ResearchRequest) -> AsyncGenerator[str, None]:
 
 
 @app.post("/stream", response_class=StreamingResponse)
-async def stream(request: ResearchRequest):
+async def stream(
+    request: ResearchRequest, api_key: Annotated[str, Depends(get_api_key)]
+):
     """Endpoint to conduct research based on the given topic and stream the report."""
     return StreamingResponse(_handle_stream(request), media_type="text/event-stream")

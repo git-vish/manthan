@@ -13,6 +13,9 @@ class AppSettings(BaseSettings):
         "perform comprehensive online research on any given topic."
     )
     APP_VERSION: str = "0.1.0"
+    API_KEY: str
+    # Comma-separated list of origins that are allowed to make requests to the API.
+    ALLOWED_ORIGINS: str = "http://localhost:3000"
 
     QUERY_COUNT: int = 2
 
@@ -27,6 +30,15 @@ class AppSettings(BaseSettings):
     TAVILY_API_KEY: str
     TAVILY_SEARCH_DEPTH: Literal["basic", "advanced"] = "basic"
     TAVILY_EXCLUDE_DOMAINS: list[str] = ["youtube.com"]
+
+    @property
+    def allowed_origins(self) -> list[str]:
+        """Returns a list of allowed origins.
+
+        Returns:
+            list[str]: A list of allowed origins.
+        """
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
 
 
 def get_settings() -> AppSettings:
