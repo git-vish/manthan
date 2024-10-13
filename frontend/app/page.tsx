@@ -3,22 +3,11 @@
 import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/theme-toggle";
-import Link from "next/link";
-import {
-  ArrowTopRightIcon,
-  ExclamationTriangleIcon,
-  GitHubLogoIcon,
-  UpdateIcon,
-} from "@radix-ui/react-icons";
-import { Send } from "lucide-react";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Send, ArrowUpRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Alert from "@/components/alert";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 /**
  * Home component for the ManthanAI application.
@@ -101,67 +90,26 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       {/* Header section */}
-      <header className="w-full border-b bg-background">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4">
-          <div className="flex-1" />
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <button
-                className="flex items-center space-x-2 text-2xl font-bold hover:cursor-pointer focus:outline-none"
-                aria-label="ManthanAI Information"
-              >
-                <span>ManthanAI</span>
-              </button>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-80">
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold">About ManthanAI</h4>
-                <p className="text-sm">
-                  ManthanAI is your intelligent research assistant. Ask
-                  questions, analyze data, and explore topics with the power of
-                  AI.
-                </p>
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-          <nav className="flex-1 flex justify-end items-center">
-            <ThemeToggle />
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       {/* Main content section */}
       <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center">
         {/* Initialization Alert */}
         {isInitializing && (
-          <div className="w-full max-w-2xl mb-8">
-            <Alert className="flex items-center space-x-4">
-              <UpdateIcon className="h-6 w-6 text-blue-500 animate-spin" />
-              <div>
-                <AlertTitle>Getting Things Ready...</AlertTitle>
-                <AlertDescription>
-                  The system is waking up from inactivity. This might take up to
-                  a minute.
-                </AlertDescription>
-              </div>
-            </Alert>
-          </div>
+          <Alert
+            variant="loader"
+            title="Getting Things Ready..."
+            description="The system is waking up from inactivity. This might take up to a minute."
+          />
         )}
 
         {/* Error Alert */}
         {initError && (
-          <div className="w-full max-w-2xl mb-8">
-            <Alert
-              variant="destructive"
-              className="flex items-center space-x-4"
-            >
-              <ExclamationTriangleIcon className="h-6 w-6" />
-              <div>
-                <AlertTitle>Oops! Something Went Wrong</AlertTitle>
-                <AlertDescription>{initError}</AlertDescription>
-              </div>
-            </Alert>
-          </div>
+          <Alert
+            variant="error"
+            title="Oops! Something Went Wrong"
+            description={initError}
+          />
         )}
 
         {/* Main Content - Hidden While Initializing */}
@@ -214,17 +162,61 @@ export default function Home() {
                     variant="outline"
                     className="text-muted-foreground cursor-pointer hover:bg-accent transition-colors"
                   >
-                    {topic} <ArrowTopRightIcon className="ml-1 h-3 w-3" />
+                    {topic} <ArrowUpRightIcon className="ml-1 h-3 w-3" />
                   </Badge>
                 ))}
               </div>
             </section>
           </>
         )}
+        {/* <div className="w-full max-w-2xl">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed est enim,
+          fermentum in finibus et, placerat sit amet nisi. Proin id nunc
+          pharetra diam faucibus blandit. Aenean leo sapien, ullamcorper
+          consequat dolor id, molestie varius quam. In suscipit purus at purus
+          efficitur tincidunt. Nam sodales venenatis pulvinar. Fusce non augue
+          interdum arcu volutpat venenatis. Nullam semper rhoncus nisl. Quisque
+          maximus porttitor ipsum, convallis imperdiet leo. Fusce tristique,
+          ligula ut aliquet suscipit, nulla nunc elementum risus, tincidunt
+          rutrum nulla felis et urna. Vivamus facilisis, tortor a bibendum
+          pellentesque, mauris lacus varius libero, vitae finibus lacus diam at
+          metus. Sed semper est at velit laoreet rhoncus. Nullam id sapien vel
+          magna euismod placerat. Fusce mattis non erat ac hendrerit. Cras non
+          condimentum risus, at feugiat ligula. Suspendisse semper pretium ante.
+          Suspendisse ornare porta magna. Mauris vel congue odio. Pellentesque
+          purus dolor, ultrices in mauris facilisis, pharetra tempus nisl.
+          Aenean elementum lobortis libero non sagittis. Aenean molestie
+          convallis lacus sit amet lobortis. Integer viverra ligula quis mi
+          ultrices iaculis. Maecenas quis eros semper erat luctus rhoncus ut
+          eget felis. Etiam non consectetur justo. Lorem ipsum dolor sit amet,
+          consectetur adipiscing elit. Quisque in tortor ac metus finibus
+          condimentum. Mauris semper nisi quam, nec tempus sem vehicula sed.
+          Aenean rhoncus vitae justo et consectetur. Nunc id turpis massa. Duis
+          quis arcu accumsan tellus egestas malesuada id consequat massa. Mauris
+          non arcu ut metus egestas porta. Sed vel leo nunc. Lorem ipsum dolor
+          sit amet, consectetur adipiscing elit. Sed pulvinar sit amet lectus
+          vel aliquet. Vivamus vel ligula in metus placerat vestibulum nec
+          aliquam lorem. Vivamus commodo luctus hendrerit. Fusce facilisis sit
+          amet elit eu sagittis. Etiam aliquet eget orci sed semper. Nam non
+          tellus sodales, malesuada mauris ut, blandit neque. Pellentesque
+          consectetur urna turpis, sed aliquet sapien dignissim ultrices. Donec
+          blandit nunc a tincidunt egestas. Maecenas interdum finibus viverra.
+          Aliquam vestibulum rutrum tortor, volutpat malesuada nunc finibus ac.
+          In iaculis egestas purus sit amet porttitor. In eros turpis, lobortis
+          quis mollis in, cursus in leo. Quisque eget tellus pellentesque ipsum
+          ornare vehicula. Donec a sapien sagittis, varius sem sit amet,
+          sagittis ante. Mauris feugiat nisi sed sapien accumsan, sed malesuada
+          lorem ullamcorper. Quisque ut suscipit arcu, at finibus quam. Vivamus
+          blandit urna ante, et lobortis libero accumsan a. Duis ultricies massa
+          quis eros malesuada, tristique aliquet urna rhoncus. Nunc neque diam,
+          convallis sed nisi id, porta lacinia sapien. Nulla at lorem nec nulla
+          laoreet commodo ac at ex. Morbi sit amet neque eget odio scelerisque
+          egestas. Pellentesque sed posuere risus, tempor sodales magna. Quisque
+          nec mattis eros. Praesent nec libero ut enim eleifend tincidunt.
+        </div> */}
       </main>
-
       {/* Footer section */}
-      <footer className="w-full bg-background/40 backdrop-blur-sm">
+      {/* <footer className="w-full bg-background/40 backdrop-blur-sm">
         <div className="container mx-auto flex justify-between items-center px-4 py-4 text-sm">
           <p>
             &copy; {new Date().getFullYear()}{" "}
@@ -247,7 +239,8 @@ export default function Home() {
             <span className="sr-only sm:not-sr-only">GitHub</span>
           </Link>
         </div>
-      </footer>
+      </footer> */}
+      <Footer />
     </div>
   );
 }
