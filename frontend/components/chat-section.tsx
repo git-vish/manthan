@@ -234,7 +234,14 @@ export default function ChatSection(): JSX.Element {
       {/* Input section */}
       <section id="input" className="mb-8">
         <div className="relative rounded-md mb-2">
-          {!isProcessing && <BorderBeam size={120} borderWidth={2} />}
+          {!isProcessing && (
+            <BorderBeam
+              size={120}
+              borderWidth={2}
+              colorFrom="#3B82F6"
+              colorTo="#14B8A6"
+            />
+          )}
           <Textarea
             placeholder={siteConfig.topicPlaceholder}
             value={topicInput}

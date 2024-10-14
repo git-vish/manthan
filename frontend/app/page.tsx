@@ -8,6 +8,7 @@ import ChatBanner from "@/components/chat-banner";
 import ChatSection from "@/components/chat-section";
 import HeroSection from "@/components/hero-section";
 import { siteConfig } from "@/config/site";
+import { env } from "@/lib/env";
 
 /**
  * Home component for the ManthanAI application.
@@ -31,10 +32,13 @@ export default function Home(): JSX.Element {
     const timeoutId = setTimeout(() => abortController.abort(), 2 * 60 * 1000); // 2 minutes timeout
 
     try {
-      const response = await fetch("/api/health-check", {
-        method: "GET",
-        signal: abortController.signal,
-      });
+      const response = await fetch(
+        `${env.NEXT_PUBLIC_MANTHAN_API_URL}/health`,
+        {
+          method: "GET",
+          signal: abortController.signal,
+        }
+      );
       clearTimeout(timeoutId);
 
       if (response.ok) {

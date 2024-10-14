@@ -15,7 +15,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   const { topic } = await request.json();
 
   try {
-    const response = await fetch(`${env.MANTHAN_API_URL}/stream`, {
+    const response = await fetch(`${env.NEXT_PUBLIC_MANTHAN_API_URL}/stream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
