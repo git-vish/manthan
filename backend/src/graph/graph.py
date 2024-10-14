@@ -9,7 +9,6 @@ from src.graph.constants import (
     NODE_CONDUCT_RESEARCH,
     NODE_GENERATE_QUERIES,
     NODE_GENERATE_RESEARCH_SUMMARY,
-    NODE_INITIATE_RESEARCH,
     NODE_SEARCH_WEB,
     NODE_WRITE_REPORT,
 )
@@ -139,7 +138,6 @@ class ResearchGraph:
         """
         progress_map = {
             NODE_GENERATE_QUERIES: "Generating search queries",
-            NODE_INITIATE_RESEARCH: "Initiating research",
             NODE_SEARCH_WEB: "Searching the web",
             NODE_GENERATE_RESEARCH_SUMMARY: "Summarizing findings",
             NODE_WRITE_REPORT: "Writing report",
@@ -170,4 +168,4 @@ class ResearchGraph:
                             "queries": event["data"]["output"]["queries"],
                             "runId": event["run_id"],
                         }
-                        yield {"event": "complete", "data": data}
+                        yield {"event": "end", "data": data}
