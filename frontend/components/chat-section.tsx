@@ -2,7 +2,7 @@
 
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, ChangeEvent } from "react";
 import { BorderBeam } from "./ui/border-beam";
 import { CopyIcon, SendIcon, ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
 import ReportMarkdown from "./report-markdown";
@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "./ui/badge";
 
 // import TopicSuggestions from "./topic-suggestions";
 
@@ -218,30 +219,60 @@ export default function ChatSection(): JSX.Element {
     }
   };
 
+  //   const MIN_LENGTH = 10;
+  const MAX_LENGTH = 100;
+
+  function handleInputChange(event: ChangeEvent<HTMLTextAreaElement>): void {
+    const value = event.target.value;
+    if (value.length <= MAX_LENGTH) {
+      setTopicInput(value);
+    }
+  }
+
   return (
     <div className="w-full max-w-2xl px-2 mb-4">
       {/* Input section */}
       <section id="input" className="mb-8">
-        <div className="relative rounded-md">
+        <div className="relative rounded-md mb-2">
           {!isProcessing && <BorderBeam size={120} borderWidth={2} />}
           <Textarea
             placeholder={siteConfig.topicPlaceholder}
             value={topicInput}
-            onChange={(e) => setTopicInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyPress}
-            className="text-md pr-12 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-accent min-h-24"
+            className="text-md pr-12 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-stone-50 dark:bg-zinc-900 min-h-24"
             aria-label="Research question input"
             disabled={isProcessing}
           />
-          <Button
-            size="icon"
-            className="absolute right-2 bottom-2"
-            onClick={handleSubmit}
-            disabled={topicInput.trim().length === 0 || isProcessing}
-            aria-label="Send message"
-          >
-            <SendIcon className="h-4 w-4" />
-          </Button>
+          {!isProcessing && topicInput.trim() !== "" && (
+            <Button
+              size="icon"
+              className="absolute right-2 bottom-2"
+              onClick={handleSubmit}
+              aria-label="Send message"
+              variant="secondary"
+            >
+              <SendIcon className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+          <p>
+            {/* topicInput.length < MIN_LENGTH
+              ? `Please enter at least ${MIN_LENGTH} characters.` */}
+            {topicInput.length === MAX_LENGTH ? `Max length reached.` : null}
+          </p>
+          <div className="hidden sm:block">
+            Use{" "}
+            <Badge variant="secondary" className="text-xs px-1 py-0.5">
+              Shift
+            </Badge>
+            +
+            <Badge variant="secondary" className="text-xs px-1 py-0.5">
+              Enter
+            </Badge>{" "}
+            for a new line
+          </div>
         </div>
       </section>
 

@@ -12,7 +12,7 @@ export default function HeroSection(): JSX.Element {
       id="hero"
       className="flex-grow container mx-auto mb-8 px-4 py-12 flex flex-col items-center justify-center text-center"
     >
-      <h1 className="text-4xl sm:text-5xl font-bold italic mb-6">
+      <h1 className="text-4xl sm:text-5xl font-bold mb-6">
         {siteConfig.chatBanner.subheader}
       </h1>
       <p className="text-xl max-w-2xl">{siteConfig.description}</p>
