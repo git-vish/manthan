@@ -107,9 +107,23 @@ const config: Config = {
           },
         },
       },
+      typography: (theme: (path: string) => string) => ({
+        DEFAULT: {
+          css: {
+            a: {
+              color: theme("colors.blue.500"),
+              textDecoration: "none",
+              "&:hover": {
+                // textDecoration: "underline",
+                color: theme("colors.blue.800"),
+              },
+            },
+          },
+        },
+      }),
     },
   },
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 };
+
 export default config;

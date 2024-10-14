@@ -17,7 +17,7 @@ export default function ReportMarkdown({
   return (
     <section id="report" className="break-words mb-6">
       <Markdown
-        className="prose max-w-none dark:prose-invert prose-a:no-underline prose-a:hover:text-blue-500"
+        className="prose max-w-none dark:prose-invert"
         remarkPlugins={[remarkGfm]}
       >
         {content}
