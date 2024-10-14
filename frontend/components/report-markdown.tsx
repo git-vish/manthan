@@ -1,5 +1,6 @@
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeExternalLinks from "rehype-external-links";
 
 interface ReportMarkdownProps {
   content: string;
@@ -19,6 +20,15 @@ export default function ReportMarkdown({
       <Markdown
         className="prose max-w-none dark:prose-invert"
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[
+          [
+            rehypeExternalLinks,
+            {
+              target: "_blank",
+              rel: ["nofollow", "noopener", "noreferrer"],
+            },
+          ],
+        ]}
       >
         {content}
       </Markdown>

@@ -186,12 +186,36 @@ export default function ChatSection(): JSX.Element {
       });
   };
 
-  const handleFeedback = (userFeedback: "upvoted" | "downvoted"): void => {
+  const handleFeedback = async (
+    userFeedback: "upvoted" | "downvoted"
+  ): Promise<void> => {
     if (feedback !== "") return;
+
     setFeedback(userFeedback);
     toast({
       description: "Thanks for your feedback!",
     });
+
+    try {
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ run_id: metadata.runId, value: userFeedback }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit feedback");
+      }
+    } catch (err) {
+      console.error("Failed to submit feedback:", err);
+      setFeedback("");
+      toast({
+        description: "Failed to submit feedback.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -271,7 +295,7 @@ export default function ChatSection(): JSX.Element {
                       aria-label="Upvote"
                       className={
                         feedback === "upvoted"
-                          ? "text-blue-500"
+                          ? "text-blue-500 hover:text-blue-500"
                           : "text-muted-foreground hover:text-foreground"
                       }
                       onClick={() => handleFeedback("upvoted")}
@@ -295,7 +319,7 @@ export default function ChatSection(): JSX.Element {
                       aria-label="Downvote"
                       className={
                         feedback === "downvoted"
-                          ? "text-red-500"
+                          ? "text-red-500 hover:text-red-500"
                           : "text-muted-foreground hover:text-foreground"
                       }
                       onClick={() => handleFeedback("downvoted")}
