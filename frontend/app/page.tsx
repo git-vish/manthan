@@ -31,13 +31,10 @@ export default function Home(): JSX.Element {
     const timeoutId = setTimeout(() => abortController.abort(), 2 * 60 * 1000); // 2 minutes timeout
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/health`,
-        {
-          method: "GET",
-          signal: abortController.signal,
-        }
-      );
+      const response = await fetch("/api/health-check", {
+        method: "GET",
+        signal: abortController.signal,
+      });
       clearTimeout(timeoutId);
 
       if (response.ok) {

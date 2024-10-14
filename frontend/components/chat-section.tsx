@@ -58,17 +58,14 @@ export default function ChatSection(): JSX.Element {
 
     try {
       // Initiate research by fetching from the API
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/stream`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ topic }),
-          signal: abortController.signal,
-        }
-      );
+      const response = await fetch("/api/research", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ topic }),
+        signal: abortController.signal,
+      });
 
       if (!response.ok) {
         throw new Error("Failed to initiate research");
