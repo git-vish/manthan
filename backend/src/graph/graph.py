@@ -9,6 +9,7 @@ from src.graph.constants import (
     NODE_CONDUCT_RESEARCH,
     NODE_GENERATE_QUERIES,
     NODE_GENERATE_RESEARCH_SUMMARY,
+    NODE_INITIATE_RESEARCH,
     NODE_SEARCH_WEB,
     NODE_WRITE_REPORT,
 )
@@ -138,8 +139,10 @@ class ResearchGraph:
         """
         progress_map = {
             NODE_GENERATE_QUERIES: "Generating search queries",
-            NODE_SEARCH_WEB: "Searching web",
-            NODE_GENERATE_RESEARCH_SUMMARY: "Analyzing web search results",
+            NODE_INITIATE_RESEARCH: "Initiating research",
+            NODE_SEARCH_WEB: "Searching the web",
+            NODE_GENERATE_RESEARCH_SUMMARY: "Summarizing findings",
+            NODE_WRITE_REPORT: "Writing report",
         }
 
         async for event in self._graph.astream_events(
@@ -151,11 +154,20 @@ class ResearchGraph:
             match kind:
                 case "on_chain_start":
                     if message := progress_map.get(name):
-                        yield {"event": "progress", "data": {"content": message}}
+                        data = {"content": message}
+                        yield {"event": "progress", "data": data}
 
                 case "on_chat_model_stream":
                     if event["metadata"]["langgraph_node"] == NODE_WRITE_REPORT:
                         data = {"content": event["data"]["chunk"].content}
                         yield {"event": "stream", "data": data}
 
-        yield {"event": "progress", "data": {"content": "END"}}
+                case "on_chain_end":
+                    # Subgraph also streams LangGraph chain end events,
+                    # to filter them out, we check if the metadata is empty
+                    if name == "LangGraph" and not event["metadata"]:
+                        data = {
+                            "queries": event["data"]["output"]["queries"],
+                            "runId": event["run_id"],
+                        }
+                        yield {"event": "complete", "data": data}

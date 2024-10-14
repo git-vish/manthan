@@ -24,7 +24,7 @@ Each memo:
 _USER_MESSAGE = """Write a detailed research report following these guidelines:
 
 Structure:
-1. Title (# header)
+1. Title (# header, max 60 characters)
    - Create an engaging, descriptive title reflecting the topic
 
 2. Introduction (## header, ~100 words)
@@ -32,7 +32,7 @@ Structure:
    - Preview key findings and report structure
    - Capture reader interest
 
-3. Main Body
+3. <Main Body>
    - Synthesize insights from all research memos
    - Minimum 1,200 words, utilizing all relevant information
    - Include specific facts, figures, and data points
