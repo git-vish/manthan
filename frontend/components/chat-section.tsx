@@ -4,38 +4,51 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { useRef, useState, useEffect } from "react";
 import { BorderBeam } from "./ui/border-beam";
-import { Send } from "lucide-react";
+import { CopyIcon, SendIcon, ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
 import ReportMarkdown from "./report-markdown";
 import ProgressUpdates from "./progress-updates";
 import { createParser, ParseEvent } from "eventsource-parser";
 import Alert from "./alert";
 import { siteConfig } from "@/config/site";
 import SearchQueries from "./seach-queries";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
+
 // import TopicSuggestions from "./topic-suggestions";
 
 export default function ChatSection(): JSX.Element {
-  // State to manage the research topic input
+  // State to store the research topic input
   const [topicInput, setTopicInput] = useState<string>("");
 
-  // State to manage progress message
+  // State to store progress message
   const [progressMessage, setProgressMessage] = useState<string>("");
   const isProcessing = progressMessage !== "";
 
-  // State to manage research report
+  // State to store research report
   const [report, setReport] = useState<string>("");
 
-  // State to manage research metadata
+  // State to store research metadata
   interface ResearchMetadata {
     queries?: string[];
     runId?: string;
   }
   const [metadata, setMetadata] = useState<ResearchMetadata>({});
 
-  // State to manage stream errors
+  // State to store feedback
+  const [feedback, setFeedback] = useState<string>("");
+
+  // State to store stream errors
   const [error, setError] = useState<string>("");
 
   // Ref to abort controller
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const { toast } = useToast();
 
   // Effect for auto-scrolling the page
   useEffect(() => {
@@ -57,6 +70,7 @@ export default function ChatSection(): JSX.Element {
     setTopicInput("");
     setReport("");
     setError("");
+    setFeedback("");
     setMetadata({});
     setProgressMessage("Initiating research");
 
@@ -109,7 +123,8 @@ export default function ChatSection(): JSX.Element {
         setError(siteConfig.alerts.streamError);
       }
     } finally {
-      abortControllerRef.current = null; // Clear the abort controller reference
+      setProgressMessage("");
+      abortControllerRef.current = null;
     }
   };
 
@@ -133,7 +148,6 @@ export default function ChatSection(): JSX.Element {
         setReport((prevReport) => prevReport + jsonData.content);
         break;
       case "end":
-        setProgressMessage("");
         setMetadata(jsonData);
         break;
     }
@@ -152,6 +166,32 @@ export default function ChatSection(): JSX.Element {
       e.preventDefault(); // Prevent default behavior of Enter key
       handleSubmit(); // Submit the topic
     }
+  };
+
+  const handleCopy = (): void => {
+    // toast({ description: "Copying report to clipboard" });
+    navigator.clipboard
+      .writeText(report)
+      .then(() => {
+        toast({
+          description: "Report copied to clipboard!",
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to copy report:", err);
+        toast({
+          description: "Failed to copy the report.",
+          variant: "destructive",
+        });
+      });
+  };
+
+  const handleFeedback = (userFeedback: "upvoted" | "downvoted"): void => {
+    if (feedback !== "") return;
+    setFeedback(userFeedback);
+    toast({
+      description: "Thanks for your feedback!",
+    });
   };
 
   return (
@@ -176,7 +216,7 @@ export default function ChatSection(): JSX.Element {
             disabled={topicInput.trim().length === 0 || isProcessing}
             aria-label="Send message"
           >
-            <Send className="h-4 w-4" />
+            <SendIcon className="h-4 w-4" />
           </Button>
         </div>
       </section>
@@ -196,11 +236,81 @@ export default function ChatSection(): JSX.Element {
       )}
 
       {/* Research report */}
-      {report && !error && (
-        <ReportMarkdown
-          content={report}
-          showActions={!isProcessing && !error}
-        />
+      {report && !error && <ReportMarkdown content={report} />}
+
+      {/* Actions */}
+      {report && !isProcessing && !error && (
+        <section id="actions">
+          <TooltipProvider>
+            <div className="flex space-x-1">
+              {/* Copy report */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Copy report to clipboard"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={handleCopy}
+                  >
+                    <CopyIcon className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy report</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Upvote */}
+              {feedback !== "downvoted" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Upvote"
+                      className={
+                        feedback === "upvoted"
+                          ? "text-blue-500"
+                          : "text-muted-foreground hover:text-foreground"
+                      }
+                      onClick={() => handleFeedback("upvoted")}
+                    >
+                      <ThumbsUpIcon className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Upvote</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+
+              {/* Downvote */}
+              {feedback !== "upvoted" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Downvote"
+                      className={
+                        feedback === "downvoted"
+                          ? "text-red-500"
+                          : "text-muted-foreground hover:text-foreground"
+                      }
+                      onClick={() => handleFeedback("downvoted")}
+                    >
+                      <ThumbsDownIcon className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Downvote</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          </TooltipProvider>
+        </section>
       )}
 
       {/* Error message */}

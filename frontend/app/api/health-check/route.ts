@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { env } from "@/lib/env";
 
 export const runtime = "edge";
@@ -10,7 +10,7 @@ export const runtime = "edge";
  * @param request - The NextRequest object
  * @returns A NextResponse object
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const response = await fetch(`${env.MANTHAN_API_URL}/health`, {
       method: "GET",

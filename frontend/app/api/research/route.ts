@@ -11,7 +11,7 @@ export const runtime = "edge";
  * @param {NextRequest} request - The Next.js request object
  * @returns {Response} A Response object with a Server-Sent Event (SSE) stream
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<Response> {
   const { topic } = await request.json();
 
   try {
@@ -31,21 +31,25 @@ export async function POST(request: NextRequest) {
     // Create a TransformStream to handle the streaming
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
+    const reader = response.body?.getReader();
+
+    if (!reader) {
+      throw new Error("Failed to get reader from response");
+    }
 
     // Read from the response and write to the stream
     (async () => {
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error("Failed to get reader from response");
-      }
-
       try {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           await writer.write(value);
         }
+      } catch (readError) {
+        console.error("Error during stream read:", readError);
+        writer.abort(readError); // Abort writer on read error
       } finally {
+        // Clean up
         reader.releaseLock();
         writer.close();
       }
