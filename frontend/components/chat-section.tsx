@@ -10,20 +10,26 @@ import ProgressUpdates from "./progress-updates";
 import { createParser, ParseEvent } from "eventsource-parser";
 import Alert from "./alert";
 import { siteConfig } from "@/config/site";
+import SearchQueries from "./seach-queries";
 // import TopicSuggestions from "./topic-suggestions";
 
 export default function ChatSection(): JSX.Element {
   // State to manage the research topic input
   const [topicInput, setTopicInput] = useState<string>("");
 
-  // State to manage processing status
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-
   // State to manage progress message
   const [progressMessage, setProgressMessage] = useState<string>("");
+  const isProcessing = progressMessage !== "";
 
   // State to manage research report
   const [report, setReport] = useState<string>("");
+
+  // State to manage research metadata
+  interface ResearchMetadata {
+    queries?: string[];
+    runId?: string;
+  }
+  const [metadata, setMetadata] = useState<ResearchMetadata>({});
 
   // State to manage stream errors
   const [error, setError] = useState<string>("");
@@ -49,9 +55,10 @@ export default function ChatSection(): JSX.Element {
 
     // Reset state for new submission
     setTopicInput("");
-    setIsProcessing(true);
     setReport("");
     setError("");
+    setMetadata({});
+    setProgressMessage("Initiating research");
 
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
@@ -102,7 +109,6 @@ export default function ChatSection(): JSX.Element {
         setError(siteConfig.alerts.streamError);
       }
     } finally {
-      setIsProcessing(false);
       abortControllerRef.current = null; // Clear the abort controller reference
     }
   };
@@ -118,18 +124,17 @@ export default function ChatSection(): JSX.Element {
     data: string
   ): void => {
     const jsonData = JSON.parse(data);
-    const content = jsonData.content;
 
     switch (event) {
       case "progress":
-        setProgressMessage(content);
+        setProgressMessage(jsonData.content);
         break;
       case "stream":
-        setProgressMessage("");
-        setReport((prevReport) => prevReport + content);
+        setReport((prevReport) => prevReport + jsonData.content);
         break;
       case "end":
-        // Handle the end of the stream if necessary
+        setProgressMessage("");
+        setMetadata(jsonData);
         break;
     }
   };
@@ -183,6 +188,11 @@ export default function ChatSection(): JSX.Element {
       {/* Progress updates */}
       {progressMessage && !error && (
         <ProgressUpdates progressMessage={progressMessage} />
+      )}
+
+      {/* Search queries */}
+      {metadata?.queries && !error && (
+        <SearchQueries queries={metadata.queries} />
       )}
 
       {/* Research report */}

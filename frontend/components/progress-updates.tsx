@@ -14,7 +14,7 @@ export default function ProgressUpdates({
   progressMessage,
 }: ProgressUpdatesProps): JSX.Element {
   return (
-    <section id="progress" className="mb-8">
+    <section id="progress" className="mb-6">
       <Alert title={progressMessage} variant="progress" />
     </section>
   );

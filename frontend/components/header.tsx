@@ -20,7 +20,7 @@ export default function Header(): JSX.Element {
         <HoverCard>
           <HoverCardTrigger asChild>
             <button
-              className="flex items-center space-x-2 text-2xl font-bold font-mono hover:text-blue-500 hover:cursor-pointer focus:outline-none"
+              className="flex items-center space-x-2 text-2xl font-bold font-mono hover:cursor-pointer focus:outline-none"
               aria-label="ManthanAI Information"
             >
               <span>{siteConfig.name}</span>
