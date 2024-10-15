@@ -135,7 +135,7 @@ async def feedback(
 ):
     """Endpoint to provide feedback on the research report."""
     logger.info(
-        f"[feedback] Feedback request received with ID: " f"'{request.feedback_id}'."
+        f"[feedback] Feedback request received for run ID: " f"'{request.run_id}'."
     )
     langsmith: LangsmithClient = app.state.langsmith
     feedback = await langsmith.create_feedback(

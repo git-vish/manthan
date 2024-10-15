@@ -50,7 +50,7 @@ Structure:
    - End with impactful closing thoughts
 
 5. Sources (## header)
-   - List all unique sources in order of citation using [n] notation
+   - List all unique sources in order of citation using [n] notation in markdown list format
    - Extract the domain from each URL:
         - Remove https:// and www. from the beginning
         - Keep only the main domain and top-level domain (e.g., google.com)
@@ -60,14 +60,14 @@ Structure:
 
     Correct format examples:
         ## Sources
-        [1] [google.com](https://www.google.com)
-        [2] [wikipedia.org](https://en.wikipedia.org/wiki/Example)
-        [3] [github.com](https://github.com/example/repo)
+        - [1] [google.com](https://www.google.com)
+        - [2] [wikipedia.org](https://en.wikipedia.org/wiki/Example)
+        - [3] [github.com](https://github.com/example/repo)
 
     Incorrect formats (do not use):
-        [1] Google https://www.google.com/
-        [1] https://www.google.com/
-        [1] [www.google.com](https://www.google.com)
+        - [1] Google https://www.google.com/
+        - [1] https://www.google.com/
+        - [1] [www.google.com](https://www.google.com)
 
 Formatting:
 - Follow APA style guidelines

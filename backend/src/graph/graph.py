@@ -153,6 +153,8 @@ class ResearchGraph:
             NODE_WRITE_REPORT: "Writing report",
         }
 
+        is_streaming_report = False
+
         async for event in self._graph.astream_events(
             input={"topic": topic, "n_queries": n_queries}, version="v2"
         ):
@@ -173,15 +175,15 @@ class ResearchGraph:
                     if event["metadata"]["langgraph_node"] == NODE_WRITE_REPORT:
                         data = {"content": event["data"]["chunk"].content}
                         yield {"event": "stream", "data": data}
-                        logger.info(
-                            f"[ResearchGraph] Streaming report content: "
-                            f"'{data['content']}'."
-                        )
+                        if not is_streaming_report:
+                            is_streaming_report = True
+                            logger.info("[ResearchGraph] Report streaming started.")
 
                 case "on_chain_end":
                     # Subgraph also streams LangGraph chain end events,
                     # to filter them out, we check if the metadata is empty
                     if name == "LangGraph" and not event["metadata"]:
+                        logger.info("[ResearchGraph] Report streaming completed.")
                         data = {
                             "queries": event["data"]["output"]["queries"],
                             "runId": event["run_id"],
@@ -189,5 +191,5 @@ class ResearchGraph:
                         yield {"event": "end", "data": data}
                         logger.info(
                             f"[ResearchGraph] Research completed with runId: "
-                            f"'{data['runId']}' and queries: {data['queries']}."
+                            f"{data['runId']}'."
                         )
