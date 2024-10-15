@@ -54,6 +54,7 @@ export function useFeedback(runId: string | undefined) {
 
   return {
     feedback,
+    setFeedback,
     handleFeedback,
   };
 }

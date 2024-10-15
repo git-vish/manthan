@@ -45,7 +45,7 @@ export function Chat(): JSX.Element {
     error,
     handleSubmit: submitResearch,
   } = useResearch();
-  const { feedback, handleFeedback } = useFeedback(metadata.runId);
+  const { feedback, setFeedback, handleFeedback } = useFeedback(metadata.runId);
 
   const isProcessing = progressMessage !== "";
 
@@ -53,6 +53,7 @@ export function Chat(): JSX.Element {
     const topic = topicInput.trim();
     if (!topic) return;
     setTopicInput("");
+    setFeedback("");
     submitResearch(topic);
   };
 
