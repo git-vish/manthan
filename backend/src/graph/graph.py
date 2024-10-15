@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncGenerator
 
 from langgraph.graph import END, START, StateGraph
@@ -21,6 +22,8 @@ from src.graph.nodes import (
 )
 from src.graph.states import ResearchGraphState, ResearchSubGraphState
 
+logger = logging.getLogger(__name__)
+
 
 class ResearchGraph:
     """
@@ -28,6 +31,8 @@ class ResearchGraph:
     """
 
     def __init__(self):
+        """Initializes the research graph with language models."""
+        logger.info("[ResearchGraph] Initializing ResearchGraph.")
         self._groq = get_llm(
             provider="groq",
             model=settings.GROQ_LLAMA_70B,
@@ -56,6 +61,7 @@ class ResearchGraph:
         Returns:
             CompiledStateGraph: The research subgraph.
         """
+        logger.info("[ResearchGraph] Building research subgraph.")
         builder = StateGraph(ResearchSubGraphState)
 
         builder.add_node(NODE_SEARCH_WEB, WebSearchNode())
@@ -80,6 +86,7 @@ class ResearchGraph:
             list[Send]: A list of Send objects for conducting research tasks.
         """
         queries: list[str] = state["queries"]
+        logger.info(f"[ResearchGraph] Initiating research with {len(queries)} queries.")
         return [Send(NODE_CONDUCT_RESEARCH, {"query": query}) for query in queries]
 
     def _build_graph(self) -> CompiledStateGraph:
@@ -89,6 +96,7 @@ class ResearchGraph:
         Returns:
             CompiledStateGraph: The main graph.
         """
+        logger.info("[ResearchGraph] Building main graph.")
         builder = StateGraph(ResearchGraphState)
 
         builder.add_node(NODE_GENERATE_QUERIES, QueryGeneratorNode(llm=self._groq))
@@ -114,10 +122,14 @@ class ResearchGraph:
         Returns:
             str: The research report.
         """
+        logger.info(
+            f"[ResearchGraph] Invoking research for topic: "
+            f"'{topic}' with {n_queries} queries."
+        )
         results = await self._graph.ainvoke(
             input={"topic": topic, "n_queries": n_queries}
         )
-
+        logger.info("[ResearchGraph] Research invoked successfully.")
         return results["report"]
 
     async def astream(self, topic: str, n_queries: int) -> AsyncGenerator[dict, None]:
@@ -129,18 +141,19 @@ class ResearchGraph:
 
         Yields:
             dict: A dictionary containing the event and data for the stream.
-
-        Example:
-            {
-                "event": "progress",
-                "data": {"content": "Generating search queries"}
-            }
         """
+        logger.info(
+            f"[ResearchGraph] Streaming research progress for topic: "
+            f"'{topic}' with {n_queries} queries."
+        )
         progress_map = {
             NODE_GENERATE_QUERIES: "Generating search queries",
-            NODE_SEARCH_WEB: "Searching web",
-            NODE_GENERATE_RESEARCH_SUMMARY: "Analyzing web search results",
+            NODE_SEARCH_WEB: "Searching the web",
+            NODE_GENERATE_RESEARCH_SUMMARY: "Summarizing findings",
+            NODE_WRITE_REPORT: "Writing report",
         }
+
+        is_streaming_report = False
 
         async for event in self._graph.astream_events(
             input={"topic": topic, "n_queries": n_queries}, version="v2"
@@ -151,11 +164,32 @@ class ResearchGraph:
             match kind:
                 case "on_chain_start":
                     if message := progress_map.get(name):
-                        yield {"event": "progress", "data": {"content": message}}
+                        data = {"content": message}
+                        yield {"event": "progress", "data": data}
+                        logger.info(
+                            f"[ResearchGraph] Event: '{message}' "
+                            f"for node: '{name}'."
+                        )
 
                 case "on_chat_model_stream":
                     if event["metadata"]["langgraph_node"] == NODE_WRITE_REPORT:
                         data = {"content": event["data"]["chunk"].content}
                         yield {"event": "stream", "data": data}
+                        if not is_streaming_report:
+                            is_streaming_report = True
+                            logger.info("[ResearchGraph] Report streaming started.")
 
-        yield {"event": "progress", "data": {"content": "END"}}
+                case "on_chain_end":
+                    # Subgraph also streams LangGraph chain end events,
+                    # to filter them out, we check if the metadata is empty
+                    if name == "LangGraph" and not event["metadata"]:
+                        logger.info("[ResearchGraph] Report streaming completed.")
+                        data = {
+                            "queries": event["data"]["output"]["queries"],
+                            "runId": event["run_id"],
+                        }
+                        yield {"event": "end", "data": data}
+                        logger.info(
+                            f"[ResearchGraph] Research completed with runId: "
+                            f"{data['runId']}'."
+                        )

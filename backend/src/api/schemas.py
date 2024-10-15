@@ -1,3 +1,6 @@
+import uuid
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from src.config import settings
@@ -6,7 +9,7 @@ from src.config import settings
 class HealthCheckResponse(BaseModel):
     """Health check response schema."""
 
-    status: str = Field(..., description="Service health status.")
+    status: str = Field("ok", description="Service health status.")
 
 
 class ResearchRequest(BaseModel):
@@ -18,7 +21,7 @@ class ResearchRequest(BaseModel):
         examples=["Langchain vs LlamaIndex"],
     )
     n_queries: int = Field(
-        default=settings.QUERY_COUNT,
+        default=settings.APP_QUERY_COUNT,
         ge=2,
         le=5,
         description="Number of search queries to generate.",
@@ -33,3 +36,16 @@ class ResearchResponse(BaseModel):
         ...,
         description="Generated research report in markdown format.",
     )
+
+
+class FeedbackRequest(BaseModel):
+    """Feedback request schema."""
+
+    run_id: uuid.UUID | str = Field(..., description="Run ID.")
+    value: Literal["upvoted", "downvoted"] = Field(..., description="Feedback value.")
+
+
+class FeedbackResponse(FeedbackRequest):
+    """Feedback response schema."""
+
+    feedback_id: uuid.UUID | str = Field(..., description="Feedback ID.")
