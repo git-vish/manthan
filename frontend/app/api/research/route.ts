@@ -8,8 +8,10 @@ export const runtime = "edge";
  * The response is a Server-Sent Event (SSE) stream that emits events of type "progress" or "stream".
  * The "progress" event contains text updates about the research progress.
  * The "stream" event contains the final research report in Markdown format.
+ * Handles common error scenarios like rate limiting, network issues, and invalid responses.
+ *
  * @param {NextRequest} request - The Next.js request object
- * @returns {Response} A Response object with a Server-Sent Event (SSE) stream
+ * @returns {Response} A Response object with a Server-Sent Event (SSE) stream or an error message
  */
 export async function POST(request: NextRequest): Promise<Response> {
   const { topic } = await request.json();
@@ -24,8 +26,30 @@ export async function POST(request: NextRequest): Promise<Response> {
       body: JSON.stringify({ topic }),
     });
 
+    if (response.status === 429) {
+      // Handle rate limiting
+      return new Response(
+        JSON.stringify({
+          message: "Rate limit exceeded. Please try again later.",
+        }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     if (!response.ok) {
-      throw new Error("Failed to initiate research");
+      const errorDetails = await response.json();
+      return new Response(
+        JSON.stringify({
+          message: errorDetails.detail || "Failed to initiate research",
+        }),
+        {
+          status: response.status,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Create a TransformStream to handle the streaming
@@ -62,8 +86,27 @@ export async function POST(request: NextRequest): Promise<Response> {
         Connection: "keep-alive",
       },
     });
-  } catch (error) {
-    console.error("Research error:", error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Research error:", error);
+
+      // Return context-based error messages for common errors
+      if (error.name === "TypeError") {
+        return new Response(
+          JSON.stringify({
+            message:
+              "Network error or API unavailable. Please try again later.",
+          }),
+          {
+            status: 502,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+    } else {
+      console.error("Unknown error:", error);
+    }
+
     return new Response(JSON.stringify({ message: "Internal Server Error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

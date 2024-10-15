@@ -34,12 +34,13 @@ export default function Home(): JSX.Element {
         signal: abortController.signal,
       });
 
-      if (response.ok) {
-        setIsInitializing(false);
-        setInitError("");
-      } else {
-        throw new Error("Health check failed");
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        throw new Error(errorDetails.message || "Health check failed");
       }
+
+      setIsInitializing(false);
+      setInitError("");
     } catch (error) {
       setIsInitializing(false);
       setInitError(

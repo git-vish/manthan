@@ -38,13 +38,15 @@ export function useFeedback(runId: string | undefined) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit feedback");
+        const errorDetails = await response.json();
+        throw new Error(errorDetails.message || "Failed to submit feedback");
       }
     } catch (err) {
       console.error("Failed to submit feedback:", err);
-      setFeedback("");
+      setFeedback(""); // Reset feedback in case of failure
       toast({
-        description: "Failed to submit feedback.",
+        description:
+          err instanceof Error ? err.message : "Failed to submit feedback.",
         variant: "destructive",
       });
     }

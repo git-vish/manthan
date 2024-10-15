@@ -71,7 +71,17 @@ export function useResearch() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to initiate research");
+        if (response.status === 429) {
+          setError("Rate limit exceeded. Please try again later.");
+        } else if (response.status === 502) {
+          setError("Network error or API unavailable. Please try again later.");
+        } else {
+          const errorDetails = await response.json();
+          setError(
+            errorDetails.message || "An error occurred. Please try again."
+          );
+        }
+        return;
       }
 
       const SSEParser = createParser((event: ParseEvent) => {
@@ -101,7 +111,7 @@ export function useResearch() {
       if ((err as Error).name === "AbortError") {
         setError(siteConfig.alerts.abortError);
       } else {
-        setError(siteConfig.alerts.streamError);
+        setError((err as Error).message || siteConfig.alerts.streamError);
       }
     } finally {
       setProgressMessage("");

@@ -18,12 +18,16 @@ export async function GET() {
       cache: "no-store", // Disable the cache
     });
 
-    if (response.ok) {
-      const healthResponse = await response.json();
-      return NextResponse.json(healthResponse, { status: 200 });
-    } else {
-      throw new Error("Health check failed");
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      return NextResponse.json(
+        { message: errorDetails.detail || "Health check failed" },
+        { status: response.status }
+      );
     }
+
+    const healthResponse = await response.json();
+    return NextResponse.json(healthResponse, { status: 200 });
   } catch (error) {
     console.error("Failed to check health:", error);
     return NextResponse.json(
