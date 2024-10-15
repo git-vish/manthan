@@ -1,8 +1,12 @@
+import logging
+
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 
 from src.graph.nodes.base import BaseNode
 from src.graph.states import ResearchGraphState
+
+logger = logging.getLogger(__name__)
 
 _SYSTEM_MESSAGE = """You are an expert writer synthesizing comprehensive research reports.
 
@@ -47,16 +51,27 @@ Structure:
 
 5. Sources (## header)
    - List all unique sources in order of citation using [n] notation
-   - EXTRACT THE DOMAIN FROM URL WITHOUT HTTPS AND WWW AND WRITE IN FORMAT: [n] [EXTRACTED DOMAIN](URL)
-       - Correct: [1] [Google](https://www.google.com)
-       - Incorrect: [1] Google https://www.google.com/
-       - Incorrect: [1] https://www.google.com/
-   - LIST ONLY ONE SOURCE PER LINE
-   - DEDUPLICATE ANY REPEATED SOURCES
+   - Extract the domain from each URL:
+        - Remove https:// and www. from the beginning
+        - Keep only the main domain and top-level domain (e.g., google.com)
+   - Format each source as: [n] [EXTRACTED_DOMAIN](FULL_URL)
+   - List only one source per line
+   - Remove any duplicate sources
+
+    Correct format examples:
+        ## Sources
+        [1] [google.com](https://www.google.com)
+        [2] [wikipedia.org](https://en.wikipedia.org/wiki/Example)
+        [3] [github.com](https://github.com/example/repo)
+
+    Incorrect formats (do not use):
+        [1] Google https://www.google.com/
+        [1] https://www.google.com/
+        [1] [www.google.com](https://www.google.com)
 
 Formatting:
-- Use proper markdown throughout
 - Follow APA style guidelines
+- Use proper markdown throughout
 - UNDERLINES (e.g., "----", "====") BELOW HEADERS OR SUBHEADERS ARE NOT PERMITTED
 - Create clear section transitions
 - Use appropriate subsection headers (###) as needed
@@ -88,6 +103,10 @@ class ReportWriterNode(BaseNode):
                 f"<MEMO [{idx}]>\n{memo}\n</MEMO [{idx}]>"
                 for idx, memo in enumerate(research_summaries)
             ]
+        )
+        logger.info(
+            f"[ReportWriterNode] Generating report for topic: '{topic}' with "
+            f"{len(research_summaries)} summaries."
         )
 
         report = await self._chain.ainvoke({"topic": topic, "research": research})

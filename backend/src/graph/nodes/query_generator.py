@@ -1,9 +1,13 @@
+import logging
+
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
 from src.graph.nodes.base import BaseNode
 from src.graph.states import ResearchGraphState
+
+logger = logging.getLogger(__name__)
 
 
 class SearchQueries(BaseModel):
@@ -43,6 +47,10 @@ class QueryGeneratorNode(BaseNode):
     async def _arun(self, state: ResearchGraphState) -> dict[str, list[str]]:
         topic = state["topic"]
         n_queries = state["n_queries"]
+
+        logger.info(
+            f"[QueryGeneratorNode] Generating {n_queries} queries for topic: '{topic}'."
+        )
 
         queries = await self._chain.ainvoke({"topic": topic, "n_queries": n_queries})
 

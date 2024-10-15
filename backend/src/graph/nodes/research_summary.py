@@ -1,8 +1,12 @@
+import logging
+
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 
 from src.graph.nodes.base import BaseNode
 from src.graph.states import ResearchSubGraphState
+
+logger = logging.getLogger(__name__)
 
 _SYSTEM_MESSAGE = """You are an expert research analyst specializing in synthesizing information from search results into clear, structured reports. 
 Your role is to analyze search documents thoroughly and create concise, informative reports that capture key insights.
@@ -64,6 +68,11 @@ class ResearchSummaryNode(BaseNode):
     async def _arun(self, state: ResearchSubGraphState) -> dict[str, list[str]]:
         query = state["query"]
         search_docs = "\n-----\n".join(state["search_docs"])
+
+        logger.info(
+            f"[ResearchSummaryNode] Generating research summary for query: "
+            f"'{query}' with {len(state['search_docs'])} documents."
+        )
 
         research_summary = await self._chain.ainvoke(
             {"query": query, "search_docs": search_docs}
