@@ -11,6 +11,7 @@ from langsmith import AsyncClient as LangsmithClient
 from starlette.responses import StreamingResponse
 
 from src.api.auth import get_api_key
+from src.api.middlewares import RateLimitMiddleware
 from src.api.schemas import (
     FeedbackRequest,
     FeedbackResponse,
@@ -49,6 +50,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(CorrelationIdMiddleware)
+app.add_middleware(
+    RateLimitMiddleware,
+    paths=settings.rate_limit_paths,
+    delta=settings.APP_RATE_LIMIT_DELTA,
+    limit=settings.APP_RATE_LIMIT,
+)
 
 
 @app.get("/health", response_model=HealthCheckResponse)
@@ -57,7 +64,7 @@ async def health():
     return HealthCheckResponse(status="ok")
 
 
-@app.post("/invoke", response_model=ResearchResponse)
+@app.post("/invoke", response_model=ResearchResponse, include_in_schema=False)
 async def invoke(
     request: ResearchRequest, api_key: Annotated[str, Depends(get_api_key)]
 ):

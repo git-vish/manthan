@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Comma-separated list of origins that are allowed to make requests to the API.
     APP_ALLOWED_ORIGINS: str = "http://localhost:3000"
     APP_QUERY_COUNT: int = 2
+    APP_RATE_LIMIT_DELTA: int = 60
+    APP_RATE_LIMIT: int = 5
+    APP_RATE_LIMIT_PATHS: str = "/stream"
 
     # *** LLM settings ***
     # Groq
@@ -51,6 +54,15 @@ class Settings(BaseSettings):
             list[str]: A list of allowed origins.
         """
         return [origin.strip() for origin in self.APP_ALLOWED_ORIGINS.split(",")]
+
+    @property
+    def rate_limit_paths(self) -> list[str]:
+        """Returns a list of rate limit paths.
+
+        Returns:
+            list[str]: A list of rate limit paths.
+        """
+        return [path.strip() for path in self.APP_RATE_LIMIT_PATHS.split(",")]
 
 
 def get_settings() -> Settings:
