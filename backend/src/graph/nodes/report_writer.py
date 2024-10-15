@@ -24,7 +24,7 @@ Each memo:
 _USER_MESSAGE = """Write a detailed research report following these guidelines:
 
 Structure:
-1. Title (# header, max 60 characters)
+1. Title (# header, max 50 characters)
    - Create an engaging, descriptive title reflecting the topic
 
 2. Introduction (## header, ~100 words)
@@ -47,9 +47,12 @@ Structure:
 
 5. Sources (## header)
    - List all unique sources in order of citation using [n] notation
-   - Format: [n] Source details
-   - One source per line
-   - Deduplicate any repeated sources
+   - EXTRACT THE DOMAIN FROM URL WITHOUT HTTPS AND WWW AND WRITE IN FORMAT: [n] [EXTRACTED DOMAIN](URL)
+       - Correct: [1] [Google](https://www.google.com)
+       - Incorrect: [1] Google https://www.google.com/
+       - Incorrect: [1] https://www.google.com/
+   - LIST ONLY ONE SOURCE PER LINE
+   - DEDUPLICATE ANY REPEATED SOURCES
 
 Formatting:
 - Use proper markdown throughout

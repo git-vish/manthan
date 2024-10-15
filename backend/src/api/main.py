@@ -7,10 +7,17 @@ from typing import Annotated
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from langsmith import AsyncClient as LangsmithClient
 from starlette.responses import StreamingResponse
 
 from src.api.auth import get_api_key
-from src.api.schemas import HealthCheckResponse, ResearchRequest, ResearchResponse
+from src.api.schemas import (
+    FeedbackRequest,
+    FeedbackResponse,
+    HealthCheckResponse,
+    ResearchRequest,
+    ResearchResponse,
+)
 from src.config import configure_logging, settings
 from src.graph import ResearchGraph
 
@@ -22,6 +29,7 @@ async def lifespan(app: FastAPI):
     # set up
     configure_logging()
     app.state.research_graph = ResearchGraph()
+    app.state.langsmith = LangsmithClient()
     yield
     # clean up
 
@@ -83,3 +91,15 @@ async def stream(
 ):
     """Endpoint to conduct research based on the given topic and stream the report."""
     return StreamingResponse(_handle_stream(request), media_type="text/event-stream")
+
+
+@app.post("/feedback", response_model=FeedbackResponse)
+async def feedback(
+    request: FeedbackRequest, api_key: Annotated[str, Depends(get_api_key)]
+):
+    """Endpoint to provide feedback on the research report."""
+    langsmith: LangsmithClient = app.state.langsmith
+    feedback = await langsmith.create_feedback(
+        key=settings.LANGCHAIN_FEEDBACK_KEY, **request.model_dump()
+    )
+    return FeedbackResponse(feedback_id=feedback.id, **request.model_dump())
