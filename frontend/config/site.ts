@@ -26,7 +26,7 @@ export const siteConfig = {
     github: "https://github.com/git-vish/manthan",
     website: "https://vishwajeet.xyz",
   },
-  topicSuggestions: ["Langchain vs LlamaIndex", "Summarize", "Who is Leonen M"],
+  topicSuggestions: ["Langchain vs LlamaIndex", "Metaphysics", "Who is Sri M?"],
   topicPlaceholder: "Research Topic ...",
 };
 

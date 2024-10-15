@@ -2,21 +2,23 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@radix-ui/react-hover-card";
-import { ThemeToggle } from "./theme-toggle";
+} from "@/components/ui/hover-card";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { siteConfig } from "@/config/site";
 
 /**
- * Header component for the ManthanAI application.
- * Displays the site name and a hover card with information.
+ * Header component.
+ * Displays the site name and a hover card with additional information.
  *
- * @return {JSX.Element} The rendered Header component
+ * @return {JSX.Element} The rendered Header component.
  */
 export default function Header(): JSX.Element {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         <div className="flex-1" />
+
+        {/* Hover card for site information */}
         <HoverCard>
           <HoverCardTrigger asChild>
             <button
@@ -32,6 +34,7 @@ export default function Header(): JSX.Element {
             </div>
           </HoverCardContent>
         </HoverCard>
+
         <nav className="flex-1 flex justify-end items-center">
           <ThemeToggle />
         </nav>

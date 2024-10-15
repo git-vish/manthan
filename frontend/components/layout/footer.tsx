@@ -3,15 +3,16 @@ import { GithubIcon } from "lucide-react";
 import { siteConfig } from "@/config/site";
 
 /**
- * Footer component for the ManthanAI application.
- * Displays copyright information and a link to the GitHub repository.
+ * Footer component.
+ * It displays copyright information along with a link to the GitHub repository.
  *
- * @return {JSX.Element} The rendered Footer component
+ * @return {JSX.Element} The rendered Footer component.
  */
 export default function Footer(): JSX.Element {
   return (
     <footer className="w-full bg-background/40 backdrop-blur-sm">
-      <div className="container mx-auto flex justify-between items-center px-4 py-4 text-sm md:justify-right">
+      <div className="container mx-auto flex justify-between items-center px-4 py-4 text-sm">
+        {/* Copyright and author link */}
         <p>
           &copy; {new Date().getFullYear()}{" "}
           <Link
@@ -23,6 +24,8 @@ export default function Footer(): JSX.Element {
             {siteConfig.author}
           </Link>
         </p>
+
+        {/* GitHub repository link */}
         <Link
           href={siteConfig.links.github}
           target="_blank"

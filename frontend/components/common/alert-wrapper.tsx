@@ -4,14 +4,15 @@ import {
   TriangleAlertIcon,
   LucideProps,
 } from "lucide-react";
-import { AlertDescription, AlertTitle, Alert as BaseAlert } from "./ui/alert";
+import { AlertDescription, AlertTitle, Alert } from "@/components/ui/alert";
 import { ForwardRefExoticComponent } from "react";
-import AnimatedShinyText from "./ui/animated-shiny-text";
+import AnimatedShinyText from "@/components/ui/animated-shiny-text";
 
+// Types of alert variants
 type Variant = "info" | "loader" | "progress" | "error";
 
 interface AlertProps {
-  title: string;
+  title?: string;
   description?: string;
   variant?: Variant;
 }
@@ -25,25 +26,25 @@ const IconMap: Record<Variant, ForwardRefExoticComponent<LucideProps>> = {
 };
 
 /**
- * Alert component for displaying notifications to the user.
+ * Alert component that displays an icon, title, and description based on the variant.
  *
  * @param {AlertProps} props - The properties for the Alert component
  * @return {JSX.Element} The rendered Alert component
  */
-export default function Alert({
+export default function AlertWrapper({
   title,
-  description = " ",
+  description,
   variant = "info",
 }: AlertProps): JSX.Element {
-  const Icon = IconMap[variant]; // Get the icon based on the variant
+  const Icon = IconMap[variant];
 
   return (
     <div className="w-full max-w-2xl mb-8">
-      <BaseAlert
+      <Alert
         variant={variant === "error" ? "destructive" : "default"}
         className="flex items-center space-x-2 space-y-2"
       >
-        {/* Render the icon if it's not a progress variant */}
+        {/* Render the icon based on the variant */}
         {variant !== "progress" && (
           <div className={`${variant !== "error" ? "text-blue-500" : ""}`}>
             <Icon
@@ -53,17 +54,21 @@ export default function Alert({
             />
           </div>
         )}
+
+        {/* Alert title and description */}
         <div>
-          <AlertTitle>
-            {variant === "progress" ? (
-              <AnimatedShinyText>{title}</AnimatedShinyText>
-            ) : (
-              <span>{title}</span>
-            )}
-          </AlertTitle>
-          {description && <AlertDescription>{description}</AlertDescription>}
+          {title && <AlertTitle>{title}</AlertTitle>}
+          {description && (
+            <AlertDescription>
+              {variant === "progress" ? (
+                <AnimatedShinyText>{description}</AnimatedShinyText>
+              ) : (
+                <span>{description}</span>
+              )}
+            </AlertDescription>
+          )}
         </div>
-      </BaseAlert>
+      </Alert>
     </div>
   );
 }

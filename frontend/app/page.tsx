@@ -1,27 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Alert from "@/components/alert";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import ChatBanner from "@/components/chat-banner";
-import ChatSection from "@/components/chat-section";
-import HeroSection from "@/components/hero-section";
+import AlertWrapper from "@/components/common/alert-wrapper";
+import { Header, Footer } from "@/components/layout";
+import { Chat } from "@/components/chat";
 import { siteConfig } from "@/config/site";
-import { env } from "@/lib/env";
 
 /**
  * Home component for the ManthanAI application.
  * Handles API initialization and renders the main interface.
  *
- * @return {JSX.Element} The rendered Home component
+ * @returns {JSX.Element} The rendered Home component
  */
 export default function Home(): JSX.Element {
-  // State to manage initialization status
-  const [isInitializing, setIsInitializing] = useState(true);
-
-  // State to manage initialization errors
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const [initError, setInitError] = useState<string>("");
+
+  useEffect(() => {
+    checkHealth();
+  }, []);
 
   /**
    * Checks the health of the backend API with a timeout.
@@ -32,14 +29,10 @@ export default function Home(): JSX.Element {
     const timeoutId = setTimeout(() => abortController.abort(), 2 * 60 * 1000); // 2 minutes timeout
 
     try {
-      const response = await fetch(
-        `${env.NEXT_PUBLIC_MANTHAN_API_URL}/health`,
-        {
-          method: "GET",
-          signal: abortController.signal,
-        }
-      );
-      clearTimeout(timeoutId);
+      const response = await fetch("/api/health", {
+        method: "GET",
+        signal: abortController.signal,
+      });
 
       if (response.ok) {
         setIsInitializing(false);
@@ -54,55 +47,48 @@ export default function Home(): JSX.Element {
           ? siteConfig.alerts.abortError
           : siteConfig.alerts.generalError
       );
+    } finally {
+      clearTimeout(timeoutId);
     }
   };
 
-  // Effect to check API health on component mount
-  useEffect(() => {
-    checkHealth();
-  }, []);
-
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      {/* Header section */}
       <Header />
 
-      {/* Main content section */}
       <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center">
-        {/* Hero section */}
-        {(isInitializing || initError) && <HeroSection />}
+        {(isInitializing || initError) && (
+          <section
+            id="hero"
+            className="flex-grow container mx-auto mb-8 px-4 py-12 flex flex-col items-center justify-center text-center"
+          >
+            <h1 className="text-4xl sm:text-5xl font-bold mb-6">
+              {siteConfig.chatBanner.subheader}
+            </h1>
 
-        {/* Initialization Alert */}
+            <p className="text-xl max-w-2xl">{siteConfig.description}</p>
+          </section>
+        )}
+
         {isInitializing && (
-          <Alert
+          <AlertWrapper
             variant="loader"
             title={siteConfig.alerts.init.title}
             description={siteConfig.alerts.init.description}
           />
         )}
 
-        {/* Error Alert */}
         {initError && (
-          <Alert
+          <AlertWrapper
             variant="error"
             title={siteConfig.alerts.error.title}
             description={initError}
           />
         )}
 
-        {/* Main Content - Hidden While Initializing */}
-        {!isInitializing && !initError && (
-          <>
-            {/* Chat banner section */}
-            <ChatBanner />
-
-            {/* Chat section */}
-            <ChatSection />
-          </>
-        )}
+        {!isInitializing && !initError && <Chat />}
       </main>
 
-      {/* Footer section */}
       <Footer />
     </div>
   );

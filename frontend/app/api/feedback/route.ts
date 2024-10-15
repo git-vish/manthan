@@ -15,17 +15,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const response = await fetch(
-      `${env.NEXT_PUBLIC_MANTHAN_API_URL}/feedback`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-KEY": env.MANTHAN_API_KEY,
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const response = await fetch(`${env.MANTHAN_API_URL}/feedback`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-KEY": env.MANTHAN_API_KEY,
+      },
+      body: JSON.stringify(body),
+    });
 
     if (response.ok) {
       const feedbackResponse = await response.json();
