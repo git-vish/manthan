@@ -1,7 +1,9 @@
 export const siteConfig = {
   name: "ManthanAI",
-  author: "Vishwajeet Ghatage",
   title: "ManthanAI - Research Assistant",
+  url: "https://manthan.vishwajeet.xyz",
+  author: "Vishwajeet Ghatage",
+  authorUrl: "https://vishwajeet.xyz",
   description:
     "ManthanAI is a LLM-based autonomous agent designed to perform comprehensive online research on any given topic.",
   alerts: {

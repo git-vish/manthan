@@ -4,6 +4,7 @@ import { Provider as ThemeProvider } from "@/components/theme/theme-provider";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
+import { siteConfig } from "@/config/site";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -20,8 +21,33 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ManthanAI - Research Assistant",
-  description: "Ask questions, analyze data, and explore topics with ManthanAI",
+  metadataBase: new URL(siteConfig.url),
+  title: siteConfig.title,
+  description: siteConfig.description,
+  authors: [{ name: siteConfig.author, url: siteConfig.authorUrl }],
+  openGraph: {
+    title: `${siteConfig.title}`,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    siteName: `${siteConfig.name}`,
+    locale: "en_US",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  twitter: {
+    title: `${siteConfig.title}`,
+    card: "summary_large_image",
+  },
 };
 
 export const viewport: Viewport = {
