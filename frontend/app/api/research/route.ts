@@ -11,12 +11,13 @@ export const runtime = "edge";
  * Handles common error scenarios like rate limiting, network issues, and invalid responses.
  *
  * @param {NextRequest} request - The Next.js request object
- * @returns {Response} A Response object with a Server-Sent Event (SSE) stream or an error message
+ * @returns {Promise<Response>} A Response object with a Server-Sent Event (SSE) stream or an error message
  */
 export async function POST(request: NextRequest): Promise<Response> {
-  const { topic } = await request.json();
-
+  const ERROR_MESSAGE = "Failed to initiate research.";
   try {
+    const { topic } = await request.json();
+
     const response = await fetch(`${env.MANTHAN_API_URL}/stream`, {
       method: "POST",
       headers: {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       const errorDetails = await response.json();
       return new Response(
         JSON.stringify({
-          message: errorDetails.detail || "Failed to initiate research",
+          message: errorDetails.detail || ERROR_MESSAGE,
         }),
         {
           status: response.status,
@@ -39,28 +40,36 @@ export async function POST(request: NextRequest): Promise<Response> {
       );
     }
 
-    // Create a TransformStream to handle the streaming
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
     const reader = response.body?.getReader();
 
     if (!reader) {
-      throw new Error("Failed to get reader from response");
+      return new Response(JSON.stringify({ message: ERROR_MESSAGE }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Read from the response and write to the stream
+    // Stream the response
     (async () => {
       try {
+        let receivedBytes = 0;
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          await writer.write(value);
+          if (value) {
+            receivedBytes += value.length;
+            await writer.write(value);
+          }
         }
-      } catch (readError) {
-        console.error("Error during stream read:", readError);
-        writer.abort(readError); // Abort writer on read error
+        if (receivedBytes === 0) {
+          throw new Error("Incomplete response: No data received");
+        }
+      } catch (error) {
+        console.error("Error during stream read:", error);
+        writer.abort(error);
       } finally {
-        // Clean up
         reader.releaseLock();
         writer.close();
       }
@@ -73,28 +82,10 @@ export async function POST(request: NextRequest): Promise<Response> {
         Connection: "keep-alive",
       },
     });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Research error:", error);
-
-      // Return context-based error messages for common errors
-      if (error.name === "TypeError") {
-        return new Response(
-          JSON.stringify({
-            message:
-              "Network error or API unavailable. Please try again later.",
-          }),
-          {
-            status: 502,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
-    } else {
-      console.error("Unknown error:", error);
-    }
-
-    return new Response(JSON.stringify({ message: "Internal Server Error" }), {
+  } catch (error) {
+    console.error("Research error:", error);
+    const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGE;
+    return new Response(JSON.stringify({ message: errorMessage }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

@@ -5,7 +5,7 @@ export const runtime = "edge";
 
 /**
  * API endpoint to submit feedback to the ManthanAI API.
- * Accepts a JSON request body with "run_id" and "value" parameters.
+ * Accepts a JSON request body with "value" parameter.
  * Returns a JSON response with the submitted feedback and a generated feedback_id if successful.
  * Handles and returns specific error codes and messages.
  *
@@ -15,10 +15,6 @@ export const runtime = "edge";
 export async function POST(request: Request): Promise<NextResponse> {
   try {
     const body = await request.json();
-    const tody = {
-      demo: false,
-      fanta: body.value,
-    };
 
     const response = await fetch(`${env.MANTHAN_API_URL}/feedback`, {
       method: "POST",
@@ -26,12 +22,12 @@ export async function POST(request: Request): Promise<NextResponse> {
         "Content-Type": "application/json",
         "X-API-KEY": env.MANTHAN_API_KEY,
       },
-      body: JSON.stringify(tody),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errorDetails = await response.json();
-      const message = errorDetails.detail || "Feedback submission failed.";
+      const message = errorDetails.detail || "Failed to submit feedback.";
       return NextResponse.json({ message }, { status: response.status });
     }
 
@@ -40,7 +36,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   } catch (error) {
     console.error("Feedback submission error:", error);
     return NextResponse.json(
-      { message: "Internal Server Error" },
+      { message: "Failed to submit feedback." },
       { status: 500 }
     );
   }

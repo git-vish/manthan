@@ -24,8 +24,12 @@ export const siteConfig = {
     github: "https://github.com/git-vish/manthan",
     website: "https://vishwajeet.xyz",
   },
-  topicSuggestions: ["Langchain vs LlamaIndex", "Metaphysics", "Who is Sri M?"],
   topicPlaceholder: "Ask ManthanAI a question...",
+  topicSuggestions: [
+    "Langchain vs LlamaIndex",
+    "Patanjali's Yoga Sutras",
+    "The Future of Space Exploration",
+  ],
 };
 
 export type SiteConfig = typeof siteConfig;
