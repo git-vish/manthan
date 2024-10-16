@@ -41,11 +41,11 @@ class ResearchResponse(BaseModel):
 class FeedbackRequest(BaseModel):
     """Feedback request schema."""
 
-    run_id: uuid.UUID | str = Field(..., description="Run ID.")
+    run_id: uuid.UUID = Field(..., description="Run ID.")
     value: Literal["upvoted", "downvoted"] = Field(..., description="Feedback value.")
 
 
 class FeedbackResponse(FeedbackRequest):
     """Feedback response schema."""
 
-    feedback_id: uuid.UUID | str = Field(..., description="Feedback ID.")
+    feedback_id: uuid.UUID = Field(..., description="Feedback ID.")

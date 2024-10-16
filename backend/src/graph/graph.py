@@ -33,7 +33,7 @@ class ResearchGraph:
     def __init__(self):
         """Initializes the research graph with language models."""
         logger.info("[ResearchGraph] Initializing ResearchGraph.")
-        self._groq = get_llm(
+        self._groq_tool = get_llm(
             provider="groq",
             model=settings.GROQ_LLAMA_70B,
             temperature=settings.GROQ_LLAMA_70B_TEMPERATURE,
@@ -99,7 +99,7 @@ class ResearchGraph:
         logger.info("[ResearchGraph] Building main graph.")
         builder = StateGraph(ResearchGraphState)
 
-        builder.add_node(NODE_GENERATE_QUERIES, QueryGeneratorNode(llm=self._groq))
+        builder.add_node(NODE_GENERATE_QUERIES, QueryGeneratorNode(llm=self._groq_tool))
         builder.add_node(NODE_CONDUCT_RESEARCH, self._build_research_subgraph())
         builder.add_node(NODE_WRITE_REPORT, ReportWriterNode(llm=self._groq_stream))
 
@@ -166,10 +166,6 @@ class ResearchGraph:
                     if message := progress_map.get(name):
                         data = {"content": message}
                         yield {"event": "progress", "data": data}
-                        logger.info(
-                            f"[ResearchGraph] Event: '{message}' "
-                            f"for node: '{name}'."
-                        )
 
                 case "on_chat_model_stream":
                     if event["metadata"]["langgraph_node"] == NODE_WRITE_REPORT:
