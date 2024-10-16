@@ -26,19 +26,6 @@ export async function POST(request: NextRequest): Promise<Response> {
       body: JSON.stringify({ topic }),
     });
 
-    if (response.status === 429) {
-      // Handle rate limiting
-      return new Response(
-        JSON.stringify({
-          message: "Rate limit exceeded. Please try again later.",
-        }),
-        {
-          status: 429,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
     if (!response.ok) {
       const errorDetails = await response.json();
       return new Response(

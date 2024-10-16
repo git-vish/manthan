@@ -15,6 +15,10 @@ export const runtime = "edge";
 export async function POST(request: Request): Promise<NextResponse> {
   try {
     const body = await request.json();
+    const tody = {
+      demo: false,
+      fanta: body.value,
+    };
 
     const response = await fetch(`${env.MANTHAN_API_URL}/feedback`, {
       method: "POST",
@@ -22,7 +26,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         "Content-Type": "application/json",
         "X-API-KEY": env.MANTHAN_API_KEY,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(tody),
     });
 
     if (!response.ok) {

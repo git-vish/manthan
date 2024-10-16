@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, ChangeEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -95,17 +97,17 @@ export function Chat(): JSX.Element {
 
   return (
     <>
-      {/* Chat banner */}
-      <section id="banner" className="mb-8 text-center">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-          {siteConfig.chatBanner.header}
-        </h1>
-        <p className="text-md sm:text-lg max-w-2xl mx-auto text-muted-foreground">
-          {siteConfig.chatBanner.subheader}
-        </p>
-      </section>
-
       <div className="w-full max-w-2xl px-2 mb-4">
+        {/* Chat banner */}
+        <section id="banner" className="mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+            {siteConfig.chatBanner.header}
+          </h1>
+          <p className="text-md sm:text-lg max-w-2xl mx-auto text-muted-foreground">
+            {siteConfig.chatBanner.subheader}
+          </p>
+        </section>
+
         {/* Input */}
         <section id="input" className="mb-4">
           <div className="relative rounded-md mb-2">
@@ -122,7 +124,7 @@ export function Chat(): JSX.Element {
               value={topicInput}
               onChange={handleInputChange}
               onKeyDown={handleKeyPress}
-              className="text-md pr-12 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-stone-50 dark:bg-zinc-900 min-h-24"
+              className="text-md pr-12 resize-none focus-visible:ring-0 bg-stone-50 dark:bg-zinc-900 min-h-24"
               aria-label="Research question input"
               disabled={isProcessing}
             />
