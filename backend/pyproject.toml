@@ -1,7 +1,7 @@
 [project]
 name = "ManthanAI"
 version = "0.1.0"
-description = "Add your description here"
+description = "ManthanAI is an LLM-based autonomous agent designed to perform comprehensive online research on any given topic."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
