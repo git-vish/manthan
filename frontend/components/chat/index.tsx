@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, ChangeEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +14,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
-import { CopyIcon, SendIcon, ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  CopyIcon,
+  SendIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+} from "lucide-react";
 
 import { useResearch } from "@/hooks/use-research";
 import { useFeedback } from "@/hooks/use-feedback";
@@ -28,6 +36,7 @@ import {
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeExternalLinks from "rehype-external-links";
+import AnimatedShinyText from "../ui/animated-shiny-text";
 
 const MAX_LENGTH = 100;
 
@@ -94,190 +103,210 @@ export function Chat(): JSX.Element {
   }, [report, progressMessage, error]);
 
   return (
-    <>
+    <div className="w-full max-w-2xl">
       {/* Chat banner */}
       <section id="banner" className="mb-8 text-center">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">
           {siteConfig.chatBanner.header}
         </h1>
-        <p className="text-md sm:text-lg max-w-2xl mx-auto text-muted-foreground">
+        <AnimatedShinyText
+          shimmerWidth={350}
+          className="italic sm:text-lg max-w-2xl mx-auto"
+        >
           {siteConfig.chatBanner.subheader}
-        </p>
+        </AnimatedShinyText>
       </section>
 
-      <div className="w-full max-w-2xl px-2 mb-4">
-        {/* Input */}
-        <section id="input" className="mb-4">
-          <div className="relative rounded-md mb-2">
-            {!isProcessing && (
-              <BorderBeam
-                size={120}
-                borderWidth={2}
-                colorFrom="#3B82F6"
-                colorTo="#14B8A6"
-              />
-            )}
-            <Textarea
-              placeholder={siteConfig.topicPlaceholder}
-              value={topicInput}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyPress}
-              className="text-md pr-12 resize-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-stone-50 dark:bg-zinc-900 min-h-24"
-              aria-label="Research question input"
-              disabled={isProcessing}
+      {/* Input */}
+      <section id="input" className="mb-4">
+        <div className="relative rounded-md mb-2">
+          {!isProcessing && (
+            <BorderBeam
+              size={120}
+              borderWidth={2}
+              colorFrom="#3B82F6"
+              colorTo="#14B8A6"
             />
-            {!isProcessing && topicInput.trim() !== "" && (
-              <Button
-                size="icon"
-                className="absolute right-2 bottom-2"
-                onClick={handleSubmit}
-                aria-label="Send message"
-                variant="outline"
-              >
-                <SendIcon className="h-4 w-4" />
-              </Button>
-            )}
+          )}
+          <Textarea
+            placeholder={siteConfig.topicPlaceholder}
+            value={topicInput}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
+            className="text-md pr-12 resize-none focus-visible:ring-0 bg-stone-50 dark:bg-zinc-900 min-h-24"
+            aria-label="Research question input"
+            disabled={isProcessing}
+          />
+          {!isProcessing && topicInput.trim() !== "" && (
+            <Button
+              size="icon"
+              className="absolute right-2 bottom-2"
+              onClick={handleSubmit}
+              aria-label="Send message"
+              variant="outline"
+            >
+              <SendIcon className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-red-500">
+            {topicInput.length === MAX_LENGTH ? `Max length reached.` : null}
+          </p>
+          <div className="hidden sm:block">
+            Use{" "}
+            <Badge variant="secondary" className="text-xs px-1 py-0.5">
+              Shift
+            </Badge>
+            +
+            <Badge variant="secondary" className="text-xs px-1 py-0.5">
+              Enter
+            </Badge>{" "}
+            for a new line
           </div>
-          <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-            <p className="text-red-500">
-              {topicInput.length === MAX_LENGTH ? `Max length reached.` : null}
-            </p>
-            <div className="hidden sm:block">
-              Use{" "}
-              <Badge variant="secondary" className="text-xs px-1 py-0.5">
-                Shift
+        </div>
+      </section>
+
+      {/* Suggestions */}
+      {!isProcessing && !report && (
+        <section id="suggestions">
+          <div className="flex flex-wrap gap-2 items-center mb-6">
+            {siteConfig.topicSuggestions.map((topic) => (
+              <Badge
+                key={topic}
+                variant="outline"
+                className="cursor-pointer hover:bg-accent transition-colors"
+                onClick={() => setTopicInput(topic)}
+              >
+                {topic}
+                <ArrowUpRightIcon className="ml-1 h-3 w-3" />
               </Badge>
-              +
-              <Badge variant="secondary" className="text-xs px-1 py-0.5">
-                Enter
-              </Badge>{" "}
-              for a new line
-            </div>
+            ))}
           </div>
         </section>
+      )}
 
-        {/* Progress updates */}
-        {progressMessage && !error && (
-          <section id="progress" className="mb-6">
-            <AlertWrapper description={progressMessage} variant="progress" />
-          </section>
-        )}
+      {/* Progress updates */}
+      {progressMessage && !error && (
+        <section id="progress" className="mb-6">
+          <AlertWrapper description={progressMessage} variant="progress" />
+        </section>
+      )}
 
-        {/* Search queries */}
-        {metadata?.queries && !error && (
-          <Accordion type="single" collapsible className="w-full mb-6">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="hover:no-underline text-md">
-                Search Queries
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="list-disc ml-5">
-                  {metadata.queries.map((query, index) => (
-                    <li key={index} className="text-md">
-                      {query}
-                    </li>
-                  ))}
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        )}
+      {/* Search queries */}
+      {metadata?.queries && !error && (
+        <Accordion type="single" collapsible className="w-full mb-6">
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="hover:no-underline text-md">
+              Search Queries
+            </AccordionTrigger>
+            <AccordionContent>
+              <ul className="list-disc ml-5">
+                {metadata.queries.map((query, index) => (
+                  <li key={index} className="text-md">
+                    {query}
+                  </li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
 
-        {/* Report */}
-        {report && !error && (
-          <section id="report" className="break-words mb-6">
-            <Markdown
-              className="prose max-w-none dark:prose-invert"
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[
-                [
-                  rehypeExternalLinks,
-                  {
-                    target: "_blank",
-                    rel: ["nofollow", "noopener", "noreferrer"],
-                  },
-                ],
-              ]}
-            >
-              {report}
-            </Markdown>
-          </section>
-        )}
+      {/* Report */}
+      {report && !error && (
+        <section id="report" className="break-words mb-6">
+          <Markdown
+            className="prose max-w-none dark:prose-invert"
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[
+              [
+                rehypeExternalLinks,
+                {
+                  target: "_blank",
+                  rel: ["nofollow", "noopener", "noreferrer"],
+                },
+              ],
+            ]}
+          >
+            {report}
+          </Markdown>
+        </section>
+      )}
 
-        {/* Actions */}
-        {report && !isProcessing && !error && (
-          <section id="actions">
-            <TooltipProvider>
-              <div className="flex space-x-1">
+      {/* Actions */}
+      {report && !isProcessing && !error && (
+        <section id="actions">
+          <TooltipProvider>
+            <div className="flex space-x-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Copy report to clipboard"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={handleCopy}
+                  >
+                    <CopyIcon className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy report</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {feedback !== "downvoted" && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       size="icon"
                       variant="ghost"
-                      aria-label="Copy report to clipboard"
-                      className="text-muted-foreground hover:text-foreground"
-                      onClick={handleCopy}
+                      aria-label="Upvote"
+                      className={
+                        feedback === "upvoted"
+                          ? "text-blue-500 hover:text-blue-500"
+                          : "text-muted-foreground hover:text-foreground"
+                      }
+                      onClick={() => handleFeedback("upvoted")}
                     >
-                      <CopyIcon className="h-5 w-5" />
+                      <ThumbsUpIcon className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Copy report</p>
+                    <p>Upvote</p>
                   </TooltipContent>
                 </Tooltip>
+              )}
 
-                {feedback !== "downvoted" && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label="Upvote"
-                        className={
-                          feedback === "upvoted"
-                            ? "text-blue-500 hover:text-blue-500"
-                            : "text-muted-foreground hover:text-foreground"
-                        }
-                        onClick={() => handleFeedback("upvoted")}
-                      >
-                        <ThumbsUpIcon className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Upvote</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
+              {feedback !== "upvoted" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Downvote"
+                      className={
+                        feedback === "downvoted"
+                          ? "text-red-500 hover:text-red-500"
+                          : "text-muted-foreground hover:text-foreground"
+                      }
+                      onClick={() => handleFeedback("downvoted")}
+                    >
+                      <ThumbsDownIcon className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Downvote</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          </TooltipProvider>
+        </section>
+      )}
 
-                {feedback !== "upvoted" && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label="Downvote"
-                        className={
-                          feedback === "downvoted"
-                            ? "text-red-500 hover:text-red-500"
-                            : "text-muted-foreground hover:text-foreground"
-                        }
-                        onClick={() => handleFeedback("downvoted")}
-                      >
-                        <ThumbsDownIcon className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Downvote</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-            </TooltipProvider>
-          </section>
-        )}
-
-        {error && <AlertWrapper title={error} variant="error" />}
-      </div>
-    </>
+      {error && <AlertWrapper title={error} variant="error" />}
+    </div>
   );
 }

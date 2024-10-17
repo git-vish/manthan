@@ -71,17 +71,8 @@ export function useResearch() {
       });
 
       if (!response.ok) {
-        if (response.status === 429) {
-          setError("Rate limit exceeded. Please try again later.");
-        } else if (response.status === 502) {
-          setError("Network error or API unavailable. Please try again later.");
-        } else {
-          const errorDetails = await response.json();
-          setError(
-            errorDetails.message || "An error occurred. Please try again."
-          );
-        }
-        return;
+        const errorDetails = await response.json();
+        throw new Error(errorDetails.message || siteConfig.alerts.streamError);
       }
 
       const SSEParser = createParser((event: ParseEvent) => {

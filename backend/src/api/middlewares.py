@@ -40,7 +40,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             if len(self.map[path]) >= self.limit:
                 return JSONResponse(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    content={"detail": "Too many requests"},
+                    content={"detail": "Rate limit exceeded. Please try again later."},
                 )
 
             # Add the new request timestamp

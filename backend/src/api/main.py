@@ -43,14 +43,6 @@ app = FastAPI(
     version=settings.APP_VERSION,
     lifespan=lifespan,
 )
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.allowed_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["*"],
-)
 app.add_middleware(CorrelationIdMiddleware)
 app.add_middleware(
     RateLimitMiddleware,
@@ -58,6 +50,14 @@ app.add_middleware(
     delta=settings.APP_RATE_LIMIT_DELTA,
     limit=settings.APP_RATE_LIMIT,
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
+print(app.middleware)
 
 
 @app.exception_handler(HTTPException)

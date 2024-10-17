@@ -7,10 +7,6 @@ export const siteConfig = {
   description:
     "ManthanAI is a LLM-based autonomous agent designed to perform comprehensive online research on any given topic.",
   alerts: {
-    init: {
-      title: "Getting Things Ready...",
-      description: "Waking up from inactivity. This may take up to a minute.",
-    },
     error: {
       title: "Oops! Something Went Wrong",
     },
@@ -28,8 +24,12 @@ export const siteConfig = {
     github: "https://github.com/git-vish/manthan",
     website: "https://vishwajeet.xyz",
   },
-  topicSuggestions: ["Langchain vs LlamaIndex", "Metaphysics", "Who is Sri M?"],
-  topicPlaceholder: "Research Topic ...",
+  topicPlaceholder: "Ask ManthanAI a question...",
+  topicSuggestions: [
+    "Langchain vs LlamaIndex",
+    "Patanjali's Yoga Sutras",
+    "The Future of Space Exploration",
+  ],
 };
 
 export type SiteConfig = typeof siteConfig;
