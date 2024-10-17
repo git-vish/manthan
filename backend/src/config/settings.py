@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     APP_API_KEY: str
     # Comma-separated list of origins that are allowed to make requests to the API.
     APP_ALLOWED_ORIGINS: str
-    APP_QUERY_COUNT: int = 2
+    APP_DEFAULT_QUERY_COUNT: int = 2
+    APP_MIN_QUERY_COUNT: int = 2
+    APP_MAX_QUERY_COUNT: int = 5
     APP_RATE_LIMIT_DELTA: int = 60
     APP_RATE_LIMIT: int = 5
     APP_RATE_LIMIT_PATHS: str = "/stream"

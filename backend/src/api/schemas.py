@@ -21,9 +21,9 @@ class ResearchRequest(BaseModel):
         examples=["Langchain vs LlamaIndex"],
     )
     n_queries: int = Field(
-        default=settings.APP_QUERY_COUNT,
-        ge=2,
-        le=5,
+        default=settings.APP_DEFAULT_QUERY_COUNT,
+        ge=settings.APP_MIN_QUERY_COUNT,
+        le=settings.APP_MAX_QUERY_COUNT,
         description="Number of search queries to generate.",
     )
 
