@@ -3,7 +3,7 @@ import logging
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 
-from src.graph.nodes.base import BaseNode
+from src.graph.nodes.base import BaseNode, NodeError
 from src.graph.states import ResearchSubGraphState
 
 logger = logging.getLogger(__name__)
@@ -74,8 +74,14 @@ class ResearchSummaryNode(BaseNode):
             f"'{query}' with {len(state['search_docs'])} documents."
         )
 
-        research_summary = await self._chain.ainvoke(
-            {"query": query, "search_docs": search_docs}
-        )
+        try:
+            research_summary = await self._chain.ainvoke(
+                {"query": query, "search_docs": search_docs}
+            )
+        except Exception as e:
+            logger.error(
+                f"[ResearchSummaryNode] Error during research summary generation: {e}"
+            )
+            raise NodeError("Unable to summarize findings. Please try again") from e
 
         return {"research_summaries": [research_summary.content]}

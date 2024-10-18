@@ -3,7 +3,7 @@ import logging
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 
-from src.graph.nodes.base import BaseNode
+from src.graph.nodes.base import BaseNode, NodeError
 from src.graph.states import ResearchGraphState
 
 logger = logging.getLogger(__name__)
@@ -109,6 +109,10 @@ class ReportWriterNode(BaseNode):
             f"{len(research_summaries)} summaries."
         )
 
-        report = await self._chain.ainvoke({"topic": topic, "research": research})
+        try:
+            report = await self._chain.ainvoke({"topic": topic, "research": research})
+        except Exception as e:
+            logger.error(f"[ReportWriterNode] Error during report generation: {e}")
+            raise NodeError("Unable to generate report. Please try again") from e
 
         return {"report": report.content}

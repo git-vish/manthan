@@ -4,7 +4,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
-from src.graph.nodes.base import BaseNode
+from src.graph.nodes.base import BaseNode, NodeError
 from src.graph.states import ResearchGraphState
 
 logger = logging.getLogger(__name__)
@@ -52,6 +52,12 @@ class QueryGeneratorNode(BaseNode):
             f"[QueryGeneratorNode] Generating {n_queries} queries for topic: '{topic}'."
         )
 
-        queries = await self._chain.ainvoke({"topic": topic, "n_queries": n_queries})
+        try:
+            queries = await self._chain.ainvoke(
+                {"topic": topic, "n_queries": n_queries}
+            )
+        except Exception as e:
+            logger.error(f"[QueryGeneratorNode] Error during query generation: {e}")
+            raise NodeError("Unable to generate queries. Please try again.") from e
 
         return {"queries": queries.queries}

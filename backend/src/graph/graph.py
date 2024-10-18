@@ -20,6 +20,7 @@ from src.graph.nodes import (
     ResearchSummaryNode,
     WebSearchNode,
 )
+from src.graph.nodes.base import NodeError
 from src.graph.states import ResearchGraphState, ResearchSubGraphState
 
 logger = logging.getLogger(__name__)
@@ -129,7 +130,7 @@ class ResearchGraph:
         results = await self._graph.ainvoke(
             input={"topic": topic, "n_queries": n_queries}
         )
-        logger.info("[ResearchGraph] Research invoked successfully.")
+        logger.info("[ResearchGraph] Research completed.")
         return results["report"]
 
     async def astream(self, topic: str, n_queries: int) -> AsyncGenerator[dict, None]:
@@ -155,37 +156,46 @@ class ResearchGraph:
 
         is_streaming_report = False
 
-        async for event in self._graph.astream_events(
-            input={"topic": topic, "n_queries": n_queries}, version="v2"
-        ):
-            kind = event["event"]
-            name = event["name"]
+        try:
+            async for event in self._graph.astream_events(
+                input={"topic": topic, "n_queries": n_queries}, version="v2"
+            ):
+                kind = event["event"]
+                name = event["name"]
 
-            match kind:
-                case "on_chain_start":
-                    if message := progress_map.get(name):
-                        data = {"content": message}
-                        yield {"event": "progress", "data": data}
+                match kind:
+                    case "on_chain_start":
+                        if message := progress_map.get(name):
+                            data = {"content": message}
+                            yield {"event": "progress", "data": data}
 
-                case "on_chat_model_stream":
-                    if event["metadata"]["langgraph_node"] == NODE_WRITE_REPORT:
-                        data = {"content": event["data"]["chunk"].content}
-                        yield {"event": "stream", "data": data}
-                        if not is_streaming_report:
-                            is_streaming_report = True
-                            logger.info("[ResearchGraph] Report streaming started.")
+                    case "on_chat_model_stream":
+                        if event["metadata"]["langgraph_node"] == NODE_WRITE_REPORT:
+                            data = {"content": event["data"]["chunk"].content}
+                            yield {"event": "stream", "data": data}
+                            if not is_streaming_report:
+                                is_streaming_report = True
+                                logger.info("[ResearchGraph] Report streaming started.")
 
-                case "on_chain_end":
-                    # Subgraph also streams LangGraph chain end events,
-                    # to filter them out, we check if the metadata is empty
-                    if name == "LangGraph" and not event["metadata"]:
-                        logger.info("[ResearchGraph] Report streaming completed.")
-                        data = {
-                            "queries": event["data"]["output"]["queries"],
-                            "runId": event["run_id"],
-                        }
-                        yield {"event": "end", "data": data}
-                        logger.info(
-                            f"[ResearchGraph] Research completed with runId: "
-                            f"{data['runId']}'."
-                        )
+                    case "on_chain_end":
+                        # Subgraph also streams LangGraph chain end events,
+                        # to filter them out, we check if the metadata is empty
+                        if name == "LangGraph" and not event["metadata"]:
+                            logger.info("[ResearchGraph] Report streaming completed.")
+                            data = {
+                                "queries": event["data"]["output"]["queries"],
+                                "runId": event["run_id"],
+                            }
+                            yield {"event": "end", "data": data}
+                            logger.info(
+                                f"[ResearchGraph] Research completed with runId: "
+                                f"{data['runId']}'."
+                            )
+        except Exception as e:
+            logger.error(f"[ResearchGraph] Error during research streaming: {str(e)}")
+            data = {
+                "content": str(e)
+                if isinstance(e, NodeError)
+                else "Unable to complete research. Please try again."
+            }
+            yield {"event": "error", "data": data}

@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from asgi_correlation_id import CorrelationIdMiddleware
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from langsmith import AsyncClient as LangsmithClient
@@ -80,7 +80,7 @@ async def handle_http_exception(request: Request, exc: HTTPException):
 @app.get("/health", response_model=HealthCheckResponse)
 async def health():
     """Endpoint to check the health status of the application."""
-    logger.info("[health] Health check request received.")
+    logger.info("[/health] Health check request received.")
     return HealthCheckResponse(status="ok")
 
 
@@ -90,14 +90,21 @@ async def invoke(
 ):
     """Endpoint to conduct research based on the given topic and return the report."""
     logger.info(
-        f"[invoke] Research request received for topic: '{request.topic}' "
+        f"[/invoke] Research request received for topic: '{request.topic}' "
         f"with {request.n_queries} queries."
     )
     research_graph: ResearchGraph = app.state.research_graph
-    report = await research_graph.ainvoke(
-        topic=request.topic, n_queries=request.n_queries
-    )
-    logger.info(f"[invoke] Research completed for topic: '{request.topic}'.")
+    try:
+        report = await research_graph.ainvoke(
+            topic=request.topic, n_queries=request.n_queries
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to complete research. Please try again",
+        ) from e
+
+    logger.info(f"[/invoke] Research completed for topic: '{request.topic}'.")
     return ResearchResponse(topic=request.topic, report=report)
 
 
@@ -125,7 +132,7 @@ async def stream(
     request: ResearchRequest, api_key: Annotated[str, Depends(get_api_key)]
 ):
     """Endpoint to conduct research based on the given topic and stream the report."""
-    logger.info(f"[stream] Streaming research for topic: '{request.topic}'.")
+    logger.info(f"[/stream] Streaming research for topic: '{request.topic}'.")
     return StreamingResponse(_handle_stream(request), media_type="text/event-stream")
 
 
@@ -135,11 +142,18 @@ async def feedback(
 ):
     """Endpoint to provide feedback on the research report."""
     logger.info(
-        f"[feedback] Feedback request received for run ID: " f"'{request.run_id}'."
+        f"[/feedback] Feedback request received for run ID: " f"'{request.run_id}'."
     )
     langsmith: LangsmithClient = app.state.langsmith
-    feedback = await langsmith.create_feedback(
-        key=settings.LANGCHAIN_FEEDBACK_KEY, **request.model_dump()
-    )
-    logger.info(f"[feedback] Feedback submitted with ID: '{feedback.id}'.")
+
+    try:
+        feedback = await langsmith.create_feedback(
+            key=settings.LANGCHAIN_FEEDBACK_KEY, **request.model_dump()
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to submit feedback. Please try again",
+        ) from e
+    logger.info(f"[/feedback] Feedback submitted with ID: '{feedback.id}'.")
     return FeedbackResponse(feedback_id=feedback.id, **request.model_dump())
