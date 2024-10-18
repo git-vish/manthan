@@ -1,6 +1,14 @@
 import Link from "next/link";
-import { GithubIcon } from "lucide-react";
+import { GithubIcon, ShieldCheckIcon } from "lucide-react";
 import { siteConfig } from "@/config/site";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 /**
  * Footer component.
@@ -25,17 +33,43 @@ export default function Footer(): JSX.Element {
           </Link>
         </p>
 
-        {/* GitHub repository link */}
-        <Link
-          href={siteConfig.links.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center hover:text-blue-500"
-          aria-label="GitHub repository"
-        >
-          <GithubIcon className="h-5 w-5 mr-1" />
-          <span className="sr-only sm:not-sr-only">GitHub</span>
-        </Link>
+        <div className="flex space-x-2 sm:space-x-4">
+          {/* Privacy notice modal */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Link
+                href="/"
+                className="flex items-center hover:text-blue-500"
+                aria-label="Privacy Notice"
+              >
+                <ShieldCheckIcon className="h-5 w-5 mr-1" />
+                <span className="sr-only sm:not-sr-only">Privacy</span>
+              </Link>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Privacy Notice</DialogTitle>
+                <DialogDescription>
+                  Your interactions, including prompts, responses, and feedback,
+                  are anonymously stored with LangSmith for product improvement
+                  purposes only.
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+
+          {/* GitHub repository link */}
+          <Link
+            href={siteConfig.links.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center hover:text-blue-500"
+            aria-label="GitHub repository"
+          >
+            <GithubIcon className="h-5 w-5 mr-1" />
+            <span className="sr-only sm:not-sr-only">GitHub</span>
+          </Link>
+        </div>
       </div>
     </footer>
   );
