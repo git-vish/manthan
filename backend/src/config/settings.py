@@ -8,12 +8,12 @@ class Settings(BaseSettings):
     """Settings for the application."""
 
     # *** App settings ***
-    APP_TITLE: str = "ManthanAI - Research Agent"
+    APP_TITLE: str = "ManthanAI - Research Assistant"
     APP_DESCRIPTION: str = (
-        "ManthanAI is an LLM-based autonomous agent designed to "
-        "perform comprehensive online research on any given topic."
+        "ManthanAI is an AI research assistant providing real-time updates and web data"
+        " summaries using models like LLaMA and Google Gemini."
     )
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "0.3.0"
     APP_API_KEY: str
     # Comma-separated list of origins that are allowed to make requests to the API.
     APP_ALLOWED_ORIGINS: str
