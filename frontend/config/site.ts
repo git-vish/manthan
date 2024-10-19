@@ -5,7 +5,7 @@ export const siteConfig = {
   author: "Vishwajeet Ghatage",
   authorUrl: "https://vishwajeet.xyz",
   description:
-    "ManthanAI is a LLM-based autonomous agent designed to perform comprehensive online research on any given topic.",
+    "ManthanAI is an AI research assistant providing real-time updates and web data summaries using models like LLaMA and Google Gemini.",
   alerts: {
     error: {
       title: "Oops! Something Went Wrong",

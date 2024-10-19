@@ -8,12 +8,12 @@ class Settings(BaseSettings):
     """Settings for the application."""
 
     # *** App settings ***
-    APP_TITLE: str = "ManthanAI - Research Agent"
+    APP_TITLE: str = "ManthanAI - Research Assistant"
     APP_DESCRIPTION: str = (
-        "ManthanAI is an LLM-based autonomous agent designed to "
-        "perform comprehensive online research on any given topic."
+        "ManthanAI is an AI research assistant providing real-time updates and web data"
+        " summaries using models like LLaMA and Google Gemini."
     )
-    APP_VERSION: str = "0.1.0"
+    APP_VERSION: str = "0.3.0"
     APP_API_KEY: str
     # Comma-separated list of origins that are allowed to make requests to the API.
     APP_ALLOWED_ORIGINS: str
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     APP_MAX_QUERY_COUNT: int = 5
     APP_RATE_LIMIT_DELTA: int = 60
     APP_RATE_LIMIT: int = 5
-    APP_RATE_LIMIT_PATHS: str = "/stream"
+    APP_RATE_LIMIT_PATHS: str = "/research"
 
     # *** LLM settings ***
     # Groq
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     LANGCHAIN_API_KEY: str
     LANGCHAIN_ENDPOINT: str
     LANGCHAIN_PROJECT: str
-    LANGCHAIN_TRACING_V2: Literal["true"]
+    LANGCHAIN_TRACING_V2: Literal["true", "false"]
     LANGCHAIN_FEEDBACK_KEY: str = "research-feedback"
 
     @property
