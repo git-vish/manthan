@@ -99,7 +99,7 @@ async def _handle_stream(request: ResearchRequest) -> AsyncGenerator[str, None]:
 
 
 @app.post("/research", response_class=StreamingResponse)
-async def stream(
+async def research(
     request: ResearchRequest, api_key: Annotated[str, Depends(get_api_key)]
 ):
     """Endpoint to conduct research based on the given topic and stream the report."""

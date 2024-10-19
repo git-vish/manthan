@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     APP_MAX_QUERY_COUNT: int = 5
     APP_RATE_LIMIT_DELTA: int = 60
     APP_RATE_LIMIT: int = 5
-    APP_RATE_LIMIT_PATHS: str = "/stream"
+    APP_RATE_LIMIT_PATHS: str = "/research"
 
     # *** LLM settings ***
     # Groq
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     LANGCHAIN_API_KEY: str
     LANGCHAIN_ENDPOINT: str
     LANGCHAIN_PROJECT: str
-    LANGCHAIN_TRACING_V2: Literal["true"]
+    LANGCHAIN_TRACING_V2: Literal["true", "false"]
     LANGCHAIN_FEEDBACK_KEY: str = "research-feedback"
 
     @property
