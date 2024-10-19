@@ -26,7 +26,7 @@ export function useResearch() {
    * @param {string} data - The data associated with the SSE event.
    */
   const handleSSEEvent = (
-    event: "progress" | "stream" | "end",
+    event: "progress" | "stream" | "error" | "end",
     data: string
   ): void => {
     const jsonData = JSON.parse(data);
@@ -38,8 +38,14 @@ export function useResearch() {
       case "stream":
         setReport((prevReport) => prevReport + jsonData.content);
         break;
+      case "error":
+        setError(jsonData.content || siteConfig.alerts.streamError);
+        break;
       case "end":
-        setMetadata(jsonData);
+        setMetadata({
+          queries: jsonData.queries,
+          runId: jsonData.run_id,
+        });
         break;
     }
   };
@@ -78,7 +84,7 @@ export function useResearch() {
       const SSEParser = createParser((event: ParseEvent) => {
         if (event && event.type === "event") {
           handleSSEEvent(
-            event.event as "progress" | "stream" | "end",
+            event.event as "progress" | "stream" | "error" | "end",
             event.data
           );
         }

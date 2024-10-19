@@ -18,6 +18,8 @@ export const siteConfig = {
     header: "What topic would you like to explore?",
     subheader: "Research. Compile. Illuminate.",
   },
+  privacyNotice:
+    "Your interactions, including inputs, responses, and feedback, are anonymously stored with LangSmith for product improvement purposes only.",
   hoverCard:
     'Inspired by the Sanskrit term "Manthan" (मंथन), which refers to the ancient practice of churning the ocean to extract valuable insights. ManthanAI churns through the digital ocean of data to deliver in-depth research outcomes.',
   links: {

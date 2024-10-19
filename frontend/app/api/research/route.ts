@@ -18,7 +18,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   try {
     const { topic } = await request.json();
 
-    const response = await fetch(`${env.MANTHAN_API_URL}/stream`, {
+    const response = await fetch(`${env.MANTHAN_API_URL}/research`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -84,8 +84,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     });
   } catch (error) {
     console.error("Research error:", error);
-    const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGE;
-    return new Response(JSON.stringify({ message: errorMessage }), {
+    return new Response(JSON.stringify({ message: ERROR_MESSAGE }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

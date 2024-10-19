@@ -12,7 +12,7 @@ import {
 
 /**
  * Footer component.
- * It displays copyright information along with a link to the GitHub repository.
+ * It displays copyright information, privacy notice and a link to the GitHub repository.
  *
  * @return {JSX.Element} The rendered Footer component.
  */
@@ -49,10 +49,8 @@ export default function Footer(): JSX.Element {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Privacy Notice</DialogTitle>
-                <DialogDescription>
-                  Your interactions, including prompts, responses, and feedback,
-                  are anonymously stored with LangSmith for product improvement
-                  purposes only.
+                <DialogDescription className="text-foreground">
+                  {siteConfig.privacyNotice}
                 </DialogDescription>
               </DialogHeader>
             </DialogContent>
