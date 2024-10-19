@@ -26,3 +26,9 @@ class BaseNode(ABC):
     async def __call__(self, state: AnyGraphState) -> dict[str, Any]:
         """Makes the instance callable, invoking the `_arun` method."""
         return await self._arun(state)
+
+
+class NodeError(Exception):
+    """Base class for exceptions raised by nodes."""
+
+    pass
