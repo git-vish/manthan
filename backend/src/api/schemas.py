@@ -20,21 +20,11 @@ class ResearchRequest(BaseModel):
         description="Research topic.",
         examples=["Langchain vs LlamaIndex"],
     )
-    n_queries: int = Field(
+    query_count: int = Field(
         default=settings.APP_DEFAULT_QUERY_COUNT,
         ge=settings.APP_MIN_QUERY_COUNT,
         le=settings.APP_MAX_QUERY_COUNT,
         description="Number of search queries to generate.",
-    )
-
-
-class ResearchResponse(BaseModel):
-    """Research response schema."""
-
-    topic: str = Field(..., description="Research topic.")
-    report: str = Field(
-        ...,
-        description="Generated research report in markdown format.",
     )
 
 

@@ -84,4 +84,4 @@ class ResearchSummaryNode(BaseNode):
             )
             raise NodeError("Unable to summarize findings. Please try again") from e
 
-        return {"research_summaries": [research_summary.content]}
+        return {"summaries": [research_summary.content]}

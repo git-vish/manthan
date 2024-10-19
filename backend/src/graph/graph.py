@@ -1,5 +1,6 @@
 import logging
 from collections.abc import AsyncGenerator
+from typing import Any, Literal
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -10,6 +11,7 @@ from src.graph.constants import (
     NODE_CONDUCT_RESEARCH,
     NODE_GENERATE_QUERIES,
     NODE_GENERATE_RESEARCH_SUMMARY,
+    NODE_SAFETY_CHECK,
     NODE_SEARCH_WEB,
     NODE_WRITE_REPORT,
 )
@@ -18,12 +20,21 @@ from src.graph.nodes import (
     QueryGeneratorNode,
     ReportWriterNode,
     ResearchSummaryNode,
+    TopicSafetyCheckNode,
     WebSearchNode,
 )
 from src.graph.nodes.base import NodeError
 from src.graph.states import ResearchGraphState, ResearchSubGraphState
 
 logger = logging.getLogger(__name__)
+
+_PROGRESS_MAP = {
+    NODE_SAFETY_CHECK: "Performing topic safety check",
+    NODE_GENERATE_QUERIES: "Generating search queries",
+    NODE_SEARCH_WEB: "Searching the web",
+    NODE_GENERATE_RESEARCH_SUMMARY: "Summarizing findings",
+    NODE_WRITE_REPORT: "Writing report",
+}
 
 
 class ResearchGraph:
@@ -57,11 +68,7 @@ class ResearchGraph:
 
     def _build_research_subgraph(self) -> CompiledStateGraph:
         """Builds up the research subgraph for conducting web searches and
-        generating research summaries based on search queries.
-
-        Returns:
-            CompiledStateGraph: The research subgraph.
-        """
+        generating research summaries based on search queries."""
         logger.info("[ResearchGraph] Building research subgraph.")
         builder = StateGraph(ResearchSubGraphState)
 
@@ -77,34 +84,33 @@ class ResearchGraph:
         return builder.compile()
 
     @staticmethod
+    def _route_safety_check(
+        state: ResearchGraphState,
+    ) -> Literal[NODE_GENERATE_QUERIES, END]:
+        """Routes based on the topic safety check."""
+        return NODE_GENERATE_QUERIES if state["is_safe"] else END
+
+    @staticmethod
     def _initiate_research(state: ResearchGraphState) -> list[Send]:
-        """Initiates the research process by sending research tasks for each query.
-
-        Args:
-            state (ResearchGraphState): The current state of the graph.
-
-        Returns:
-            list[Send]: A list of Send objects for conducting research tasks.
-        """
+        """Initiates the research process with generated queries."""
         queries: list[str] = state["queries"]
         logger.info(f"[ResearchGraph] Initiating research with {len(queries)} queries.")
         return [Send(NODE_CONDUCT_RESEARCH, {"query": query}) for query in queries]
 
     def _build_graph(self) -> CompiledStateGraph:
-        """Builds up the main graph for generating queries, conducting research,
-        and writing reports.
-
-        Returns:
-            CompiledStateGraph: The main graph.
-        """
+        """Builds the main research graph."""
         logger.info("[ResearchGraph] Building main graph.")
         builder = StateGraph(ResearchGraphState)
 
+        builder.add_node(NODE_SAFETY_CHECK, TopicSafetyCheckNode(llm=self._groq_tool))
         builder.add_node(NODE_GENERATE_QUERIES, QueryGeneratorNode(llm=self._groq_tool))
         builder.add_node(NODE_CONDUCT_RESEARCH, self._build_research_subgraph())
         builder.add_node(NODE_WRITE_REPORT, ReportWriterNode(llm=self._groq_stream))
 
-        builder.add_edge(START, NODE_GENERATE_QUERIES)
+        builder.add_edge(START, NODE_SAFETY_CHECK)
+        builder.add_conditional_edges(
+            NODE_SAFETY_CHECK, self._route_safety_check, [NODE_GENERATE_QUERIES, END]
+        )
         builder.add_conditional_edges(
             NODE_GENERATE_QUERIES, self._initiate_research, [NODE_CONDUCT_RESEARCH]
         )
@@ -113,89 +119,90 @@ class ResearchGraph:
 
         return builder.compile()
 
-    async def ainvoke(self, topic: str, n_queries: int) -> str:
-        """Asynchronously conducts research on the given topic and returns a report.
+    @staticmethod
+    def _handle_event(event: dict[str, Any]) -> dict[str, Any] | None:
+        """Handles chain start, graph end, and stream events."""
+        kind = event["event"]
+        name = event["name"]
 
-        Args:
-            topic (str): The topic to conduct research on.
-            n_queries (int): The number of queries to generate.
+        match kind:
+            # progress updates
+            case "on_chain_start":
+                if message := _PROGRESS_MAP.get(name):
+                    return {"event": "progress", "data": {"content": message}}
 
-        Returns:
-            str: The research report.
-        """
-        logger.info(
-            f"[ResearchGraph] Invoking research for topic: "
-            f"'{topic}' with {n_queries} queries."
-        )
-        results = await self._graph.ainvoke(
-            input={"topic": topic, "n_queries": n_queries}
-        )
-        logger.info("[ResearchGraph] Research completed.")
-        return results["report"]
+            # end of graph
+            case "on_chain_end":
+                # Subgraph also streams LangGraph chain end events,
+                # to filter them out, we check if the metadata is empty
+                if name != "LangGraph" or event["metadata"]:
+                    return
 
-    async def astream(self, topic: str, n_queries: int) -> AsyncGenerator[dict, None]:
+                output = event["data"]["output"]
+
+                # Safety error
+                if not output["is_safe"]:
+                    logger.info(
+                        f"[ResearchGraph] '{output['topic']}' is unsafe: "
+                        f"{output['violated_category']}"
+                    )
+                    return {
+                        "event": "error",
+                        "data": {
+                            "content": f"Topic is flagged as unsafe: "
+                            f"{output['violated_category']}"
+                        },
+                    }
+
+                # End event
+                logger.info(
+                    f"[ResearchGraph] Research completed for topic: "
+                    f"'{output['topic']}'."
+                )
+                return {
+                    "event": "end",
+                    "data": {
+                        "queries": output["queries"],
+                        "run_id": event["run_id"],
+                    },
+                }
+
+            # report stream
+            case "on_chat_model_stream":
+                if event["metadata"]["langgraph_node"] == NODE_WRITE_REPORT:
+                    return {
+                        "event": "stream",
+                        "data": {"content": event["data"]["chunk"].content},
+                    }
+
+    async def astream(self, topic: str, query_count: int) -> AsyncGenerator[dict, None]:
         """Asynchronously streams research progress and the final report.
 
         Args:
             topic (str): The topic to conduct research on.
-            n_queries (int): The number of queries to generate.
+            query_count (int): The number of queries to generate.
 
         Yields:
             dict: A dictionary containing the event and data for the stream.
         """
         logger.info(
-            f"[ResearchGraph] Streaming research progress for topic: "
-            f"'{topic}' with {n_queries} queries."
+            f"[ResearchGraph] Starting research for topic:"
+            f" '{topic}' with {query_count} queries."
         )
-        progress_map = {
-            NODE_GENERATE_QUERIES: "Generating search queries",
-            NODE_SEARCH_WEB: "Searching the web",
-            NODE_GENERATE_RESEARCH_SUMMARY: "Summarizing findings",
-            NODE_WRITE_REPORT: "Writing report",
-        }
-
-        is_streaming_report = False
-
         try:
             async for event in self._graph.astream_events(
-                input={"topic": topic, "n_queries": n_queries}, version="v2"
+                input={"topic": topic, "query_count": query_count}, version="v2"
             ):
-                kind = event["event"]
-                name = event["name"]
-
-                match kind:
-                    case "on_chain_start":
-                        if message := progress_map.get(name):
-                            data = {"content": message}
-                            yield {"event": "progress", "data": data}
-
-                    case "on_chat_model_stream":
-                        if event["metadata"]["langgraph_node"] == NODE_WRITE_REPORT:
-                            data = {"content": event["data"]["chunk"].content}
-                            yield {"event": "stream", "data": data}
-                            if not is_streaming_report:
-                                is_streaming_report = True
-                                logger.info("[ResearchGraph] Report streaming started.")
-
-                    case "on_chain_end":
-                        # Subgraph also streams LangGraph chain end events,
-                        # to filter them out, we check if the metadata is empty
-                        if name == "LangGraph" and not event["metadata"]:
-                            logger.info("[ResearchGraph] Report streaming completed.")
-                            data = {
-                                "queries": event["data"]["output"]["queries"],
-                                "runId": event["run_id"],
-                            }
-                            yield {"event": "end", "data": data}
-                            logger.info(
-                                f"[ResearchGraph] Research completed with runId: "
-                                f"{data['runId']}'."
-                            )
+                if e := self._handle_event(event):
+                    yield e
         except Exception as e:
             logger.error(f"[ResearchGraph] Error during research streaming: {str(e)}")
-            data = {
-                "content": str(e)
-                if isinstance(e, NodeError)
-                else "Unable to complete research. Please try again."
+
+            yield {
+                "event": "error",
+                "data": {
+                    "content": str(e)
+                    if isinstance(e, NodeError)
+                    else "Unable to complete research. Please try again."
+                },
             }
-            yield {"event": "error", "data": data}

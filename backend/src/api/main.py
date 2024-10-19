@@ -18,7 +18,6 @@ from src.api.schemas import (
     FeedbackResponse,
     HealthCheckResponse,
     ResearchRequest,
-    ResearchResponse,
 )
 from src.config import configure_logging, settings
 from src.graph import ResearchGraph
@@ -57,7 +56,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
-print(app.middleware)
 
 
 @app.exception_handler(HTTPException)
@@ -84,30 +82,6 @@ async def health():
     return HealthCheckResponse(status="ok")
 
 
-@app.post("/invoke", response_model=ResearchResponse, include_in_schema=False)
-async def invoke(
-    request: ResearchRequest, api_key: Annotated[str, Depends(get_api_key)]
-):
-    """Endpoint to conduct research based on the given topic and return the report."""
-    logger.info(
-        f"[/invoke] Research request received for topic: '{request.topic}' "
-        f"with {request.n_queries} queries."
-    )
-    research_graph: ResearchGraph = app.state.research_graph
-    try:
-        report = await research_graph.ainvoke(
-            topic=request.topic, n_queries=request.n_queries
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to complete research. Please try again",
-        ) from e
-
-    logger.info(f"[/invoke] Research completed for topic: '{request.topic}'.")
-    return ResearchResponse(topic=request.topic, report=report)
-
-
 async def _handle_stream(request: ResearchRequest) -> AsyncGenerator[str, None]:
     """Handles streaming events from the research graph.
 
@@ -117,22 +91,19 @@ async def _handle_stream(request: ResearchRequest) -> AsyncGenerator[str, None]:
     Yields:
         str: Server-Sent Events formatted string.
     """
-    logger.info(
-        f"[_handle_stream] Streaming research events for topic: " f"'{request.topic}'."
-    )
     research_graph: ResearchGraph = app.state.research_graph
     async for event in research_graph.astream(
-        topic=request.topic, n_queries=request.n_queries
+        topic=request.topic, query_count=request.query_count
     ):
         yield f"event: {event['event']}\ndata: {json.dumps(event['data'])}\n\n"
 
 
-@app.post("/stream", response_class=StreamingResponse)
+@app.post("/research", response_class=StreamingResponse)
 async def stream(
     request: ResearchRequest, api_key: Annotated[str, Depends(get_api_key)]
 ):
     """Endpoint to conduct research based on the given topic and stream the report."""
-    logger.info(f"[/stream] Streaming research for topic: '{request.topic}'.")
+    logger.info(f"[/research] Streaming research for topic: '{request.topic}'.")
     return StreamingResponse(_handle_stream(request), media_type="text/event-stream")
 
 

@@ -96,7 +96,7 @@ class ReportWriterNode(BaseNode):
 
     async def _arun(self, state: ResearchGraphState) -> dict[str, str]:
         topic = state["topic"]
-        research_summaries = state["research_summaries"]
+        research_summaries = state["summaries"]
 
         research = "\n-----\n".join(
             [
